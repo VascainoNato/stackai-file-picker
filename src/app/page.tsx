@@ -9,10 +9,12 @@ export default function Home() {
     <div className="flex w-full h-screen flex-col bg-[#F9FAFB]">
       <div className="flex w-full h-screen">
         <LeftBar/>
-        <div className="flex w-full flex-col flex-grow">
-        <Header/>
-        <Content/>
-        <Footer/>
+        <div className="flex w-full flex-col">
+          <Header/>
+          <div className="flex w-full flex-grow">
+            <Content />
+          </div>
+          <Footer/>
         </div>
       </div>
     </div>
