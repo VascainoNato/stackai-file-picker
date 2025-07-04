@@ -1,30 +1,27 @@
-import { useState } from "react";
+import useSWR from "swr";
 import { listFolderResources, listRootResources } from "../api/drive";
 import { DriveResource } from "../types/drive";
 
-export function useDriveResources(connectionId: string | null, token: string | null, folderId?: string) {
-  const [resources, setResources] = useState<DriveResource[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function fetchResources() {
-    if (!connectionId || !token) return;
-    setLoading(true);
-    setError(null);
-    try {
-      let res;
-      if (folderId) {
-        res = await listFolderResources(connectionId, folderId, token);
-      } else {
-        res = await listRootResources(connectionId, token);
-      }
-      setResources(res.data);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
+const fetcher = async ([connectionId, token, folderId]: [string, string, string | undefined]) => {
+  if (folderId) {
+    const res = await listFolderResources(connectionId, folderId, token);
+    return res.data;
+  } else {
+    const res = await listRootResources(connectionId, token);
+    return res.data;
   }
+};
 
-  return { resources, loading, error, fetchResources };
+export function useDriveResources(connectionId: string | null, token: string | null, folderId?: string) {
+  const { data, error, isLoading } = useSWR<DriveResource[]>(
+    connectionId && token ? [connectionId, token, folderId] : null,
+    fetcher
+  );
+
+  return {
+    resources: data || [],
+    loading: isLoading,
+    error: error ? error.message : null,
+    fetchResources: () => {} 
+  };
 }

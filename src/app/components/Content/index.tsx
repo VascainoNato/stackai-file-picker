@@ -1,22 +1,25 @@
 "use client";
 import { useFilePickerLogic } from "../../hooks/useFilePicker";
+import { mutate } from "swr";
 
 export default function Content() {
   const {
-    // Estados de inicialização
     isInitializing,
     initError,
-    // Recursos
     resources,
-    // Navegação
     folderStack, handleEnterFolder, handleGoBack,
-    // Seleção e indexação
     selectedIds, pendingIds, indexedIds, knowledgeBaseId,
     loadingKB, errorKB, handleRemoveFromIndex,
     toggleSelect, handleIndexSelected,
+    connection, token
   } = useFilePickerLogic();
 
-  // 🚀 LOADING INICIAL
+  const prefetchFolder = (folderId: string) => {
+    if (connection?.connection_id && token) {
+      mutate([connection.connection_id, token, folderId]);
+    }
+  };
+
   if (isInitializing) {
     return (
       <section className="w-full flex flex-col gap-4 p-8">
@@ -28,7 +31,6 @@ export default function Content() {
     );
   }
 
-  // 🚀 ERRO INICIAL
   if (initError) {
     return (
       <section className="w-full flex flex-col gap-4 p-8">
@@ -39,14 +41,12 @@ export default function Content() {
     );
   }
 
-  // 🚀 INTERFACE PRINCIPAL (só pastas/arquivos)
   return (
     <section className="w-full flex flex-col gap-4 p-8">
       <h2 className="text-xl font-bold">Google Drive File Picker</h2>
 
       {resources.length > 0 && (
         <div className="bg-white border rounded-lg p-4">
-          {/* Contador de selecionados */}
           {selectedIds.length > 0 && (
             <div className="text-sm text-gray-700 mb-4">
               {selectedIds.length} arquivo(s)/pasta(s) selecionado(s) para indexação
@@ -59,7 +59,6 @@ export default function Content() {
               const isPending = pendingIds.includes(item.resource_id);
               const isSelected = selectedIds.includes(item.resource_id);
               
-              // Determina o status
               let status: "indexed" | "processing" | "pending" | "not_indexed";
               if (isIndexed) {
                 status = "indexed";
@@ -85,6 +84,7 @@ export default function Content() {
                     <button
                       className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
                       onClick={() => handleEnterFolder(item.resource_id)}
+                      onMouseEnter={() => prefetchFolder(item.resource_id)}
                     >
                       📁 <span>{item.inode_path.path}</span>
                     </button>
@@ -94,7 +94,6 @@ export default function Content() {
                     </div>
                   )}
                   
-                  {/* Badge de status */}
                   {status === "indexed" ? (
                     <span className="ml-auto px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
                       Indexado
@@ -109,7 +108,6 @@ export default function Content() {
                     </span>
                   ) : null}
                   
-                  {/* Botão de remover se já está indexado */}
                   {isIndexed && knowledgeBaseId && (
                     <button
                       className="ml-2 text-red-600 hover:text-red-800 text-xs px-2 py-1 rounded hover:bg-red-50"
@@ -130,7 +128,6 @@ export default function Content() {
             })}
           </ul>
           
-          {/* Botão Voltar */}
           {folderStack.length > 0 && (
             <button
               className="mt-4 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
@@ -140,7 +137,6 @@ export default function Content() {
             </button>
           )}
           
-          {/* Botão de indexar */}
           {selectedIds.length > 0 && (
             <button
               className="mt-4 ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
