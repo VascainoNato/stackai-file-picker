@@ -1,3 +1,5 @@
+export type SWRKey = [string, string, string]; 
+
 export type DriveConnection = {
     connection_id: string;
 };
@@ -10,6 +12,5 @@ export type DriveResource = {
 };
   
 export type DriveResourcesResponse = {
-    data: DriveResource[];
+    resources: DriveResource[]; 
 };
-
