@@ -5,6 +5,7 @@ import {
   listIndexedResources,
   removeFromIndex,
 } from "../api/knowledgeBase";
+import { DriveResource } from "../types/drive";
 
 export function useKnowledgeBase(token: string | null) {
   const [loading, setLoading] = useState(false);
@@ -65,6 +66,16 @@ export function useKnowledgeBase(token: string | null) {
     }
   }
 
+  async function getIndexedResourceIds(knowledgeBaseId: string): Promise<string[]> {
+    if (!token) return [];
+    try {
+      const res = await listIndexedResources(knowledgeBaseId, "/", token);
+      return res.data.map((item: DriveResource) => item.resource_id);
+    } catch {
+      return [];
+    }
+  }
+
   return {
     loading,
     error,
@@ -73,5 +84,6 @@ export function useKnowledgeBase(token: string | null) {
     handleSync,
     handleListIndexed,
     handleRemoveFromIndex,
+    getIndexedResourceIds,
   };
 }
