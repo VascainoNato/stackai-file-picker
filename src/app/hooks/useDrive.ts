@@ -7,7 +7,6 @@ export function useDrive(token: string | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-
   async function fetchConnection() {
     if (!token) return;
     setLoading(true);
