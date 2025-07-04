@@ -1,4 +1,4 @@
-export type SWRKey = [string, string, string]; 
+
 
 export type DriveConnection = {
     connection_id: string;
