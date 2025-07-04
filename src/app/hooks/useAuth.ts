@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { login } from "../api/auth";
 
 export function useAuth() {
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("drive_token");
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("drive_token", token);
+    } else {
+      localStorage.removeItem("drive_token");
+    }
+  }, [token]);
 
   async function handleLogin(email: string, password: string) {
     setLoading(true);
