@@ -21,10 +21,8 @@ export default function Content() {
     currentFolderId || undefined
   );
 
-  // Buscar arquivos sempre que mudar de pasta/conexão/token
   useEffect(() => {
     if (connection && token) fetchResources();
-    // eslint-disable-next-line
   }, [connection, token, currentFolderId]);
 
   // Entrar em uma pasta
@@ -92,7 +90,7 @@ export default function Content() {
           {loadingConn ? "Buscando conexão..." : "Buscar conexão Google Drive"}
         </button>
       )}
-      {errorConn && <div className="text-red-600">Erro conexão: {errorConn}</div>}
+      {errorConn && <div className="text-red-600">Erro conexão: {String(errorConn)}</div>}
       {connection && (
         <div className="bg-gray-100 p-2 rounded break-all mt-2">
           <strong>Conexão Google Drive:</strong>
@@ -149,11 +147,11 @@ export default function Content() {
         disabled={loadingKB}
         onClick={async () => {
           try {
-            await handleCreate(connection!.connection_id, selectedIds, "Minha Knowledge Base");
+            await handleCreate(connection!.connection_id, selectedIds, "My Knowledge Base");
             alert("Indexação iniciada!");
             setSelectedIds([]);
-          } catch (err: any) {
-            alert("Erro ao indexar: " + err.message);
+          } catch (err: unknown) {
+            alert("Erro ao indexar: " + (err instanceof Error ? err.message : 'Erro desconhecido'));
           }
         }}
       >

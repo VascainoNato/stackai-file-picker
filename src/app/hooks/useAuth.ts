@@ -12,8 +12,8 @@ export function useAuth() {
     try {
       const accessToken = await login(email, password);
       setToken(accessToken);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }

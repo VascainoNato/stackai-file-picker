@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { listFolderResources, listRootResources } from "../api/drive";
+import { DriveResource } from "../types/drive";
 
 export function useDriveResources(connectionId: string | null, token: string | null, folderId?: string) {
-  const [resources, setResources] = useState<any[]>([]);
+  const [resources, setResources] = useState<DriveResource[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,8 +19,8 @@ export function useDriveResources(connectionId: string | null, token: string | n
         res = await listRootResources(connectionId, token);
       }
       setResources(res.data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
