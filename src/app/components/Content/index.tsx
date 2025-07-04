@@ -3,93 +3,57 @@ import { useFilePickerLogic } from "../../hooks/useFilePicker";
 
 export default function Content() {
   const {
-    // Autenticação
-    token, loading, error, handleLogin, email, setEmail, password, setPassword,
-    // Conexão
-    connection, loadingConn, errorConn, fetchConnection,
+    // Estados de inicialização
+    isInitializing,
+    initError,
     // Recursos
-    resources, loadingRes, errorRes, fetchResources,
+    resources,
     // Navegação
     folderStack, handleEnterFolder, handleGoBack,
     // Seleção e indexação
     selectedIds, pendingIds, indexedIds, knowledgeBaseId,
-    loadingKB, errorKB, handleCreate, handleRemoveFromIndex,
+    loadingKB, errorKB, handleRemoveFromIndex,
     toggleSelect, handleIndexSelected,
   } = useFilePickerLogic();
 
+  // 🚀 LOADING INICIAL
+  if (isInitializing) {
+    return (
+      <section className="w-full flex flex-col gap-4 p-8">
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+          <span>Carregando arquivos do Google Drive...</span>
+        </div>
+      </section>
+    );
+  }
+
+  // 🚀 ERRO INICIAL
+  if (initError) {
+    return (
+      <section className="w-full flex flex-col gap-4 p-8">
+        <div className="text-red-600">
+          Erro ao carregar: {initError}
+        </div>
+      </section>
+    );
+  }
+
+  // 🚀 INTERFACE PRINCIPAL (só pastas/arquivos)
   return (
     <section className="w-full flex flex-col gap-4 p-8">
-      <h2 className="text-xl font-bold">Teste de Login e Conexão</h2>
-      <div className="flex gap-2">
-        <input
-          className="border px-2 py-1 rounded"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          placeholder="Email"
-        />
-        <input
-          className="border px-2 py-1 rounded"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          placeholder="Senha"
-          type="password"
-        />
-        <button
-          className="bg-blue-600 text-white px-4 py-1 rounded"
-          onClick={() => handleLogin(email, password)}
-          disabled={loading}
-        >
-          {loading ? "Logando..." : "Login"}
-        </button>
-      </div>
-      {error && <div className="text-red-600">Erro: {error}</div>}
-      {token && (
-        <div className="bg-gray-100 p-2 rounded break-all">
-          <strong>Token:</strong>
-          <pre className="whitespace-pre-wrap">{token}</pre>
-        </div>
-      )}
-
-      {/* Se já tem token, mostra botão para buscar conexão */}
-      {token && (
-        <button
-          className="bg-green-600 text-white px-4 py-1 rounded mt-4"
-          onClick={fetchConnection}
-          disabled={loadingConn}
-        >
-          {loadingConn ? "Buscando conexão..." : "Buscar conexão Google Drive"}
-        </button>
-      )}
-      {errorConn && <div className="text-red-600">Erro conexão: {String(errorConn)}</div>}
-      {connection && (
-        <div className="bg-gray-100 p-2 rounded break-all mt-2">
-          <strong>Conexão Google Drive:</strong>
-          <pre className="whitespace-pre-wrap">{JSON.stringify(connection, null, 2)}</pre>
-        </div>
-      )}
-      {connection && (
-        <button
-          className="bg-purple-600 text-white px-4 py-1 rounded mt-4"
-          onClick={fetchResources}
-          disabled={loadingRes}
-        >
-          {loadingRes ? "Listando arquivos..." : "Listar arquivos/pastas"}
-        </button>
-      )}
-      {errorRes && <div className="text-red-600">Erro arquivos: {errorRes}</div>}
+      <h2 className="text-xl font-bold">Google Drive File Picker</h2>
 
       {resources.length > 0 && (
-        <div className="bg-gray-100 p-2 rounded break-all mt-2">
-          <strong>Arquivos/Pastas:</strong>
-          
+        <div className="bg-white border rounded-lg p-4">
           {/* Contador de selecionados */}
           {selectedIds.length > 0 && (
-            <div className="text-sm text-gray-700 mb-2 mt-2">
+            <div className="text-sm text-gray-700 mb-4">
               {selectedIds.length} arquivo(s)/pasta(s) selecionado(s) para indexação
             </div>
           )}
           
-          <ul className="mt-2">
+          <ul className="space-y-2">
             {resources.map((item) => {
               const isIndexed = indexedIds.includes(item.resource_id);
               const isPending = pendingIds.includes(item.resource_id);
@@ -100,55 +64,55 @@ export default function Content() {
               if (isIndexed) {
                 status = "indexed";
               } else if (isPending && !isSelected) {
-                status = "processing"; // Foi indexado mas ainda não confirmado
+                status = "processing";
               } else if (isSelected) {
-                status = "pending"; // Selecionado para indexar
+                status = "pending";
               } else {
                 status = "not_indexed";
               }
               
               return (
-                <li key={item.resource_id} className="flex items-center gap-2 py-1">
+                <li key={item.resource_id} className="flex items-center gap-3 py-2 px-2 hover:bg-gray-50 rounded">
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(item.resource_id)}
                     onChange={() => toggleSelect(item.resource_id)}
                     disabled={isIndexed}
+                    className="w-4 h-4"
                   />
+                  
                   {item.inode_type === "directory" ? (
                     <button
-                      className="text-blue-600 underline"
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
                       onClick={() => handleEnterFolder(item.resource_id)}
                     >
-                      📁 {item.inode_path.path}
+                      📁 <span>{item.inode_path.path}</span>
                     </button>
                   ) : (
-                    <span>📄 {item.inode_path.path}</span>
+                    <div className="flex items-center gap-2">
+                      📄 <span>{item.inode_path.path}</span>
+                    </div>
                   )}
                   
                   {/* Badge de status */}
                   {status === "indexed" ? (
-                    <span className="ml-2 px-2 py-0.5 bg-green-200 text-green-800 rounded text-xs">
+                    <span className="ml-auto px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
                       Indexado
                     </span>
                   ) : status === "processing" ? (
-                    <span className="ml-2 px-2 py-0.5 bg-blue-200 text-blue-800 rounded text-xs">
+                    <span className="ml-auto px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
                       Processando
                     </span>
                   ) : status === "pending" ? (
-                    <span className="ml-2 px-2 py-0.5 bg-yellow-200 text-yellow-800 rounded text-xs">
+                    <span className="ml-auto px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
                       Pendente
                     </span>
-                  ) : (
-                    <span className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-800 rounded text-xs">
-                      Não indexado
-                    </span>
-                  )}
+                  ) : null}
                   
                   {/* Botão de remover se já está indexado */}
                   {isIndexed && knowledgeBaseId && (
                     <button
-                      className="ml-2 text-red-600 underline text-xs hover:bg-red-50 px-1 rounded"
+                      className="ml-2 text-red-600 hover:text-red-800 text-xs px-2 py-1 rounded hover:bg-red-50"
                       onClick={async () => {
                         try {
                           await handleRemoveFromIndex(knowledgeBaseId, item.inode_path.path);
@@ -169,17 +133,17 @@ export default function Content() {
           {/* Botão Voltar */}
           {folderStack.length > 0 && (
             <button
-              className="mt-2 bg-gray-300 px-2 py-1 rounded hover:bg-gray-400"
+              className="mt-4 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
               onClick={handleGoBack}
             >
-              Voltar
+              ← Voltar
             </button>
           )}
           
           {/* Botão de indexar */}
           {selectedIds.length > 0 && (
             <button
-              className="bg-orange-600 text-white px-4 py-1 rounded mt-4 hover:bg-orange-700"
+              className="mt-4 ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
               disabled={loadingKB}
               onClick={async () => {
                 const result = await handleIndexSelected();
@@ -195,10 +159,9 @@ export default function Content() {
           {errorKB && <div className="text-red-600 mt-2">Erro indexação: {errorKB}</div>}
         </div>
       )}
-      {selectedIds.length > 0 && (
-        <div className="text-sm text-gray-700 mb-2">
-          {selectedIds.length} arquivo(s)/pasta(s) selecionado(s) para indexação
-        </div>
+
+      {resources.length === 0 && !isInitializing && (
+        <div className="text-gray-500">Nenhum arquivo encontrado.</div>
       )}
     </section>
   );

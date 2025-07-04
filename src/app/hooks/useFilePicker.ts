@@ -8,8 +8,8 @@ import { useKnowledgeBase } from "./useKnowledgeBase";
 export function useFilePickerLogic() {
   // Autenticação
   const { token, loading, error, handleLogin } = useAuth();
-  const [email, setEmail] = useState(process.env.NEXT_PUBLIC_TEST_EMAIL || "");
-  const [password, setPassword] = useState(process.env.NEXT_PUBLIC_TEST_PASSWORD || "");
+  const [email] = useState(process.env.NEXT_PUBLIC_TEST_EMAIL || "");
+  const [password] = useState(process.env.NEXT_PUBLIC_TEST_PASSWORD || "");
 
   // Conexão
   const { connection, loading: loadingConn, error: errorConn, fetchConnection } = useDrive(token);
@@ -32,11 +32,77 @@ export function useFilePickerLogic() {
   const [knowledgeBaseId, setKnowledgeBaseId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
 
-  // Efeitos
+  // Estado geral de carregamento
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  // 🚀 AUTO-INICIALIZAÇÃO
   useEffect(() => {
-    if (connection && token) fetchResources();
+    async function autoInitialize() {
+      if (!email || !password) {
+        setInitError("Credenciais não configuradas");
+        setIsInitializing(false);
+        return;
+      }
+
+      try {
+        setIsInitializing(true);
+        setInitError(null);
+
+        // 1. Login automático
+        if (!token && !loading) {
+          await handleLogin(email, password);
+        }
+      } catch (err) {
+        setInitError(err instanceof Error ? err.message : 'Erro no login automático');
+        setIsInitializing(false);
+      }
+    }
+
+    autoInitialize();
+  }, []); // Só roda uma vez
+
+  // 🚀 AUTO-CONEXÃO (quando token estiver pronto)
+  useEffect(() => {
+    async function autoConnect() {
+      if (token && !connection && !loadingConn) {
+        try {
+          await fetchConnection();
+        } catch (err) {
+          setInitError(err instanceof Error ? err.message : 'Erro na conexão automática');
+        }
+      }
+    }
+
+    autoConnect();
+  }, [token]);
+
+  // 🚀 AUTO-FETCH RECURSOS (quando conexão estiver pronta)
+  useEffect(() => {
+    async function autoFetchResources() {
+      if (connection && token && !loadingRes) {
+        try {
+          await fetchResources();
+          setIsInitializing(false); // Inicialização completa!
+        } catch (err) {
+          setInitError(err instanceof Error ? err.message : 'Erro ao carregar recursos');
+          setIsInitializing(false);
+        }
+      }
+    }
+
+    autoFetchResources();
   }, [connection, token, currentFolderId]);
 
+  // 🚀 AUTO-RENOVAÇÃO DE TOKEN (se expirar)
+  useEffect(() => {
+    if (error && error.includes('token') && email && password) {
+      // Token expirou, renova automaticamente
+      handleLogin(email, password);
+    }
+  }, [error]);
+
+  // Efeito para indexação
   useEffect(() => {
     if (knowledgeBaseId && getIndexedResourceIds) {
       getIndexedResourceIds(knowledgeBaseId).then((ids) => {
@@ -89,18 +155,16 @@ export function useFilePickerLogic() {
   }
 
   return {
-    // Autenticação
-    token, loading, error, handleLogin, email, setEmail, password, setPassword,
-    // Conexão
-    connection, loadingConn, errorConn, fetchConnection,
+    // Estados de inicialização
+    isInitializing,
+    initError,
     // Recursos
-    resources, loadingRes, errorRes, fetchResources,
+    resources,
     // Navegação
-    currentFolderId, folderStack, handleEnterFolder, handleGoBack,
+    folderStack, handleEnterFolder, handleGoBack,
     // Seleção e indexação
-    selectedIds, setSelectedIds, pendingIds, setPendingIds, indexedIds, setIndexedIds,
-    knowledgeBaseId, setKnowledgeBaseId,
-    loadingKB, errorKB, handleCreate, getIndexedResourceIds, handleRemoveFromIndex,
+    selectedIds, pendingIds, indexedIds, knowledgeBaseId,
+    loadingKB, errorKB, handleRemoveFromIndex,
     toggleSelect, handleIndexSelected,
   };
 }
