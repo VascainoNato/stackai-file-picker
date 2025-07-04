@@ -14,3 +14,5 @@ export type DriveResource = {
 export type DriveResourcesResponse = {
     resources: DriveResource[]; 
 };
+
+export type SWRKey = [string, string, string];
