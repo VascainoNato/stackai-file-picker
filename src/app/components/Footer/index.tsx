@@ -61,7 +61,7 @@ export default function Footer() {
         )}
         {folderStack.length > 0 && (
           <button
-            className="bg-white px-4 py-2 rounded border-gray-300 border cursor-pointer"
+            className="bg-white px-4 py-2 rounded border-gray-300 border cursor-pointer text-[color:#202124]"
             onClick={handleGoBack}
           >
             Return
