@@ -23,7 +23,6 @@ export default function Footer() {
           </div>
         )}
 
-        {/* Botão Voltar */}
         {folderStack.length > 0 && (
           <button
             className="bg-white hover:bg-gray-300 px-4 py-2 rounded border"
@@ -33,7 +32,6 @@ export default function Footer() {
           </button>
         )}
 
-        {/* Botão Cancelar - só aparece se tiver algo selecionado */}
         {selectedIds.length > 0 && (
           <button
             className="bg-white hover:bg-gray-300 px-4 py-2 rounded border"
@@ -43,7 +41,6 @@ export default function Footer() {
           </button>
         )}
 
-        {/* Botão Confirmar Indexação - só aparece se tiver algo selecionado */}
         {selectedIds.length > 0 && (
           <button
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"

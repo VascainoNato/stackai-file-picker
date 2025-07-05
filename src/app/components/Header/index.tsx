@@ -17,7 +17,7 @@ export default function Header() {
                 width={30}
                 height={30}
               />
-              <h1 className="text-md font-roboto font-semibold text-[color:#202124]">Google Drive</h1>
+              <h1 className="text-md font-roboto font-medium text-[color:#202124]">Google Drive</h1>
               <div className="flex items-center p-1 rounded bg-gray-200 text-gray-500 ml-2 font-roboto text-sm">
                 Beta
               </div>
