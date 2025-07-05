@@ -26,12 +26,6 @@ export default function Content() {
   const [typeFilter, setTypeFilter] = useState<"all" | "directory" | "file">("all");
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const isLoadingResources = isInitializing || loadingRes;
-  console.log({
-    isInitializing,
-    loadingRes,
-    resourcesLength: resources.length,
-    isLoadingResources,
-  });
 
   const prefetchFolder = (folderId: string) => {
     if (connection?.connection_id && token) {
