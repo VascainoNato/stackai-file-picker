@@ -18,24 +18,23 @@ export function useDriveResourcesSWR(
   token: string | null,
   folderId?: string | null
 ) {
-  // ✅ Só ativa SWR quando tudo está pronto
   const key: SWRKey | null = connectionId && token 
     ? [`/drive/${connectionId}/resources`, folderId || 'root', token]
     : null;
 
   const { data, error, isLoading, mutate } = useSWR<DriveResourcesResponse>(
     key,
-    ([path, folderIdKey, tokenKey]: SWRKey) => {
+    ([ folderIdKey, tokenKey]: SWRKey) => {
       const actualFolderId = folderIdKey === 'root' ? null : folderIdKey;
       return fetcher(connectionId!, actualFolderId, tokenKey);
     },
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
-      dedupingInterval: 30000, // 30s cache
+      dedupingInterval: 30000, 
       errorRetryCount: 3,
       errorRetryInterval: 1000,
-      keepPreviousData: true, // ✅ Mantém dados durante navegação
+      keepPreviousData: true, 
     }
   );
 

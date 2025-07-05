@@ -3,9 +3,10 @@ import { useFilePickerLogic } from "../../hooks/useFilePicker";
 import { mutate } from "swr";
 import { fetcher } from "../../hooks/useDriveResources";
 import { useState } from "react";
-import { ChevronDown, ChevronRight, ChevronUp, Columns, File, FileIcon, Filter, Folder, Grid, Layout, List, ListFilter, Search, SortAsc, SortDesc } from "lucide-react";
+import { ChevronDown, ChevronUp,  File, Filter, Folder, ListFilter, Search, SortDesc } from "lucide-react";
 import FolderPreview from "./FolderPreview";
 import React from "react";
+import { LoadingDots } from '../ui/Skeleton';
 
 export default function Content() {
   const {
@@ -13,8 +14,8 @@ export default function Content() {
     initError,
     resources,
     folderStack, handleEnterFolder, handleGoBack,
-    selectedIds, pendingIds, indexedIds, knowledgeBaseId, setSelectedIds,
-    loadingKB, errorKB, handleRemoveFromIndex,
+    selectedIds, pendingIds, indexedIds, setSelectedIds,
+    loadingKB, errorKB, loadingRes,
     toggleSelect, handleIndexSelected,
     connection, token
   } = useFilePickerLogic();
@@ -24,6 +25,13 @@ export default function Content() {
   const [statusFilter, setStatusFilter] = useState<"all" | "indexed" | "pending" | "processing" | "not_indexed">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "directory" | "file">("all");
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
+  const isLoadingResources = isInitializing || loadingRes;
+  console.log({
+    isInitializing,
+    loadingRes,
+    resourcesLength: resources.length,
+    isLoadingResources,
+  });
 
   const prefetchFolder = (folderId: string) => {
     if (connection?.connection_id && token) {
@@ -35,58 +43,47 @@ export default function Content() {
     }
   };
 
-  const filteredResources = resources
-    .filter(item => {
-      const matchesSearch = item.inode_path.path.toLowerCase().includes(search.toLowerCase());
-      const matchesType = typeFilter === "all" || 
-        (typeFilter === "directory" && item.inode_type === "directory") ||
-        (typeFilter === "file" && item.inode_type !== "directory");
-      const isIndexed = indexedIds.includes(item.resource_id);
-      const isPending = pendingIds.includes(item.resource_id);
-      const isSelected = selectedIds.includes(item.resource_id);
-      
-      let status: "indexed" | "processing" | "pending" | "not_indexed";
-      if (isIndexed) {
-        status = "indexed";
-      } else if (isPending && !isSelected) {
-        status = "processing";
-      } else if (isSelected) {
-        status = "pending";
-      } else {
-        status = "not_indexed";
-      }
-      
-      const matchesStatus = statusFilter === "all" || status === statusFilter;
-      return matchesSearch && matchesType && matchesStatus;
-    })
-    .sort((a, b) => {
-      if (sort === "az") {
-        return a.inode_path.path.localeCompare(b.inode_path.path);
-      }
-      if (sort === "za") {
-        return b.inode_path.path.localeCompare(a.inode_path.path);
-      }
-      if (sort === "type") {
-        if (a.inode_type !== b.inode_type) {
-          return a.inode_type === "directory" ? -1 : 1;
+  const filteredResources = React.useMemo(() => {
+    return resources
+      .filter(item => {
+        const matchesSearch = item.inode_path.path.toLowerCase().includes(search.toLowerCase());
+        const matchesType = typeFilter === "all" || 
+          (typeFilter === "directory" && item.inode_type === "directory") ||
+          (typeFilter === "file" && item.inode_type !== "directory");
+        const isIndexed = indexedIds.includes(item.resource_id);
+        const isPending = pendingIds.includes(item.resource_id);
+        const isSelected = selectedIds.includes(item.resource_id);
+        
+        let status: "indexed" | "processing" | "pending" | "not_indexed";
+        if (isIndexed) {
+          status = "indexed";
+        } else if (isPending && !isSelected) {
+          status = "processing";
+        } else if (isSelected) {
+          status = "pending";
+        } else {
+          status = "not_indexed";
         }
-        return a.inode_path.path.localeCompare(b.inode_path.path);
-      }
-      return 0;
-    });
-
-  const Skeleton = () => (
-    <div className="bg-white border rounded-lg p-4">
-      <div className="space-y-2">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center gap-3 py-1">
-            <div className="w-4 h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded flex-1"></div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+        
+        const matchesStatus = statusFilter === "all" || status === statusFilter;
+        return matchesSearch && matchesType && matchesStatus;
+      })
+      .sort((a, b) => {
+        if (sort === "az") {
+          return a.inode_path.path.localeCompare(b.inode_path.path);
+        }
+        if (sort === "za") {
+          return b.inode_path.path.localeCompare(a.inode_path.path);
+        }
+        if (sort === "type") {
+          if (a.inode_type !== b.inode_type) {
+            return a.inode_type === "directory" ? -1 : 1;
+          }
+          return a.inode_path.path.localeCompare(b.inode_path.path);
+        }
+        return 0;
+      });
+  }, [resources, search, typeFilter, statusFilter, sort, indexedIds, pendingIds, selectedIds]);
 
   function handleSelectAll(checked: boolean) {
     if (checked) {
@@ -106,7 +103,7 @@ export default function Content() {
         : [...prev, folderId]
     );
   }
-  const isLoadingResources = isInitializing || (resources.length === 0 && !initError);
+
   return (
     <section className="w-full flex flex-col gap-2 p-4 lg:px-8 xl:px-16 lg:gap-0">
       <h2 className="text-sm font-roboto text-gray-500 flex lg:hidden">Folders</h2>
@@ -134,9 +131,6 @@ export default function Content() {
         </div>
       </div>
 
-      {isLoadingResources && <Skeleton />}
-
-      {resources.length > 0 && (
         <div className=" ">
           <div className="hidden lg:flex w-full items-center py-2 border-b">
             <div className="flex items-center gap-16 w-[70%]">
@@ -205,9 +199,16 @@ export default function Content() {
                 </div>
               </div>
           </div>
-        
-          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 align-center lg:flex lg:flex-col lg:overflow-y-auto lg:max-h-screen lg:gap-0 cursor-pointer">
-          {filteredResources.map((item) => {
+
+          {isLoadingResources ? (
+         <ul className="grid grid-cols-2 gap-2 ...">
+         <li className="col-span-full text-center text-gray-500 py-6">
+           <LoadingDots />
+         </li>
+       </ul>
+        ) : (
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:flex lg:flex-col lg:overflow-y-auto lg:max-h-screen lg:gap-0 cursor-pointer">
+            {filteredResources.map((item) => {
             const isIndexed = indexedIds.includes(item.resource_id);
             const isPending = pendingIds.includes(item.resource_id);
             const isSelected = selectedIds.includes(item.resource_id);
@@ -303,14 +304,10 @@ export default function Content() {
               </React.Fragment>
             );
           })}
-        </ul>
-
+          </ul>
+        )}
         
-          {filteredResources.length === 0 && (
-            <div className="text-gray-500 text-center py-4">
-              No results found for applied filters.
-            </div>
-          )}
+        
           {folderStack.length > 0 && (
             <button
               className="mt-4 bg-white hover:bg-gray-300 px-4 py-2 rounded"
@@ -337,7 +334,6 @@ export default function Content() {
           
           {errorKB && <div className="text-red-600 mt-2">Indexing error: {errorKB}</div>}
         </div>
-      )}
 
       {!isLoadingResources && resources.length === 0 && !initError && (
         <div className="text-gray-500">No files found.</div>

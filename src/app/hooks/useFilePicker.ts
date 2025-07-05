@@ -8,10 +8,10 @@ export function useFilePickerLogic() {
   const { token, loading, error, handleLogin } = useAuth();
   const [email] = useState(process.env.NEXT_PUBLIC_TEST_EMAIL || "");
   const [password] = useState(process.env.NEXT_PUBLIC_TEST_PASSWORD || "");
-  const { connection, loading: loadingConn, error: errorConn, fetchConnection } = useDrive(token);
+  const { connection, loading: loadingConn, fetchConnection } = useDrive(token);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [folderStack, setFolderStack] = useState<string[]>([]);
-  const { resources, loading: loadingRes, error: errorRes } = useDriveResources(
+  const { resources, loading: loadingRes } = useDriveResources(
     connection?.connection_id || null,
     token,
     currentFolderId || undefined
@@ -26,54 +26,50 @@ export function useFilePickerLogic() {
   const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function autoInitialize() {
+    async function initialize() {
       if (!email || !password) {
         setInitError("Credentials not configured");
         setIsInitializing(false);
         return;
       }
-
+      setIsInitializing(true);
+      setInitError(null);
+  
       try {
-        setIsInitializing(true);
-        setInitError(null);
-
         if (!token && !loading) {
           await handleLogin(email, password);
         }
+        if (token && !connection && !loadingConn) {
+          await fetchConnection();
+        }
       } catch (err) {
-        setInitError(err instanceof Error ? err.message : 'Automatic login error');
+        setInitError(err instanceof Error ? err.message : 'Initialization error');
         setIsInitializing(false);
       }
     }
+  
+        initialize();
 
-    autoInitialize();
-  }, []);
-
-  useEffect(() => {
-    async function autoConnect() {
-      if (token && !connection && !loadingConn) {
-        try {
-          await fetchConnection();
-        } catch (err) {
-          setInitError(err instanceof Error ? err.message : 'Automatic connection error');
+        if (connection && token && !loadingRes) {
+        setIsInitializing(false);
         }
-      }
-    }
-
-    autoConnect();
-  }, [token]);
-
-  useEffect(() => {
-    if (connection && token && !loadingRes) {
-      setIsInitializing(false);
-    }
-  }, [connection, token, loadingRes]);
+    }, [
+        email,
+        password,
+        token,
+        loading,
+        connection,
+        loadingConn,
+        loadingRes,
+        handleLogin,
+        fetchConnection,
+    ]);
 
   useEffect(() => {
     if (error && error.includes('token') && email && password) {
       handleLogin(email, password);
     }
-  }, [error]);
+  }, [error, email, password, handleLogin]);
 
   useEffect(() => {
     if (knowledgeBaseId && getIndexedResourceIds) {
@@ -130,7 +126,7 @@ export function useFilePickerLogic() {
     resources,
     folderStack, handleEnterFolder, handleGoBack,
     selectedIds, pendingIds, indexedIds, knowledgeBaseId, setSelectedIds,
-    loadingKB, errorKB, handleRemoveFromIndex,
+    loadingKB, errorKB, handleRemoveFromIndex, loadingRes,
     toggleSelect, handleIndexSelected,
     connection, token 
   };
