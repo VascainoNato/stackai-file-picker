@@ -62,6 +62,7 @@ export function useFilePickerLogic() {
         loadingConn,
         loadingRes,
         handleLogin,
+        resources,
         fetchConnection,
     ]);
 
@@ -127,7 +128,7 @@ export function useFilePickerLogic() {
     folderStack, handleEnterFolder, handleGoBack,
     selectedIds, pendingIds, indexedIds, knowledgeBaseId, setSelectedIds,
     loadingKB, errorKB, handleRemoveFromIndex, loadingRes,
-    toggleSelect, handleIndexSelected,
+    toggleSelect, handleIndexSelected,setIndexedIds,setPendingIds,
     connection, token 
   };
 }

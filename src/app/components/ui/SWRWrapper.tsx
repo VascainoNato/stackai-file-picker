@@ -1,13 +1,16 @@
 "use client";
 import { SWRConfig } from "swr";
 import { useEffect, useState } from "react";
+import type { Cache } from "swr";
 
-function localStorageProvider() {
-  const map = new Map<string, any>(JSON.parse(localStorage.getItem("swr-cache") || "[]"));
+function localStorageProvider(): Cache {
+  const map = new Map<string, unknown>(JSON.parse(localStorage.getItem("swr-cache") || "[]"));
+
   window.addEventListener("beforeunload", () => {
     localStorage.setItem("swr-cache", JSON.stringify(Array.from(map.entries())));
   });
-  return map;
+
+  return map as Cache;
 }
 
 export function SWRProvider({ children }: { children: React.ReactNode }) {

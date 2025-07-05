@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import { SWRProvider } from "./components/ui/SWRWrapper";
+import { FilePickerProvider } from "./contexts/FilePickerContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,7 +43,9 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-roboto), var(--font-geist-sans), var(--font-geist-mono), sans-serif" }}
       >
         <SWRProvider>
-          {children}
+            <FilePickerProvider>
+              {children}
+            </FilePickerProvider>
         </SWRProvider>
       </body>
     </html>

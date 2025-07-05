@@ -5,7 +5,7 @@ export default function Header() {
     return (
       <div className="flex w-full h-16 bg-[#c1c1c1] lg:bg-white lg:h-20">
         <div className="flex w-full h-full px-6 items-center justify-between lg:px-8 xl:px-16">
-          <div className="flex gap-6 lg:justify-between lg:w-full lg:h-20 items-center lg:border-b-2">
+          <div className="flex gap-6 lg:justify-between lg:w-full lg:h-20 items-center lg:border-b-2 border-gray-200">
             <button className="flex items-center lg:hidden">
               <Menu size={24} color="gray"/>
             </button>

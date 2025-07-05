@@ -1,6 +1,6 @@
 "use client";
-import { useFilePickerLogic } from "../../hooks/useFilePicker";
 import { mutate } from "swr";
+import { useFilePicker } from "@/app/contexts/FilePickerContext";
 import { fetcher } from "../../hooks/useDriveResources";
 import { useState } from "react";
 import { ChevronDown, ChevronUp,  File, Filter, Folder, ListFilter, Search, SortDesc } from "lucide-react";
@@ -18,7 +18,7 @@ export default function Content() {
     loadingKB, errorKB, loadingRes,
     toggleSelect, handleIndexSelected,
     connection, token
-  } = useFilePickerLogic();
+  } = useFilePicker();
   
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"az" | "za" | "type">("type");
@@ -79,6 +79,8 @@ export default function Content() {
       });
   }, [resources, search, typeFilter, statusFilter, sort, indexedIds, pendingIds, selectedIds]);
 
+  
+
   function handleSelectAll(checked: boolean) {
     if (checked) {
       const allIds = filteredResources
@@ -97,6 +99,7 @@ export default function Content() {
         : [...prev, folderId]
     );
   }
+  
 
   return (
     <section className="w-full flex flex-col gap-2 p-4 lg:px-8 xl:px-16 lg:gap-0">
@@ -126,7 +129,7 @@ export default function Content() {
       </div>
 
         <div className=" ">
-          <div className="hidden lg:flex w-full items-center py-2 border-b">
+          <div className="hidden lg:flex w-full items-center py-2 border-b border-gray-200">
             <div className="flex items-center gap-16 w-[70%]">
             <div className="relative flex items-center gap-2">
               <ListFilter size={24} className="text-gray-300 pointer-events-none" />
@@ -193,6 +196,13 @@ export default function Content() {
                 </div>
               </div>
           </div>
+
+          {filteredResources.length === 0 && !isLoadingResources && (
+            <div className="text-center text-gray-500 py-4">
+              No items found matching your search or filters.
+            </div>
+          )}
+
 
           {isLoadingResources ? (
          <ul className="grid grid-cols-2 gap-2 ...">
@@ -300,38 +310,7 @@ export default function Content() {
           })}
           </ul>
         )}
-        
-        
-          {folderStack.length > 0 && (
-            <button
-              className="mt-4 bg-white hover:bg-gray-300 px-4 py-2 rounded"
-              onClick={handleGoBack}
-            >
-              ← Return
-            </button>
-          )}
-          
-          {selectedIds.length > 0 && (
-            <button
-              className="mt-4 ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-              disabled={loadingKB}
-              onClick={async () => {
-                const result = await handleIndexSelected();
-                if (result) {
-                  alert(result.message);
-                }
-              }}
-            >
-              {loadingKB ? "Indexing..." : "Index selected"}
-            </button>
-          )}
-          
-          {errorKB && <div className="text-red-600 mt-2">Indexing error: {errorKB}</div>}
         </div>
-
-      {!isLoadingResources && resources.length === 0 && !initError && (
-        <div className="text-gray-500">No files found.</div>
-      )}
     </section>
   );
 }
