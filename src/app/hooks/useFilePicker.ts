@@ -8,12 +8,9 @@ export function useFilePickerLogic() {
   const { token, loading, error, handleLogin } = useAuth();
   const [email] = useState(process.env.NEXT_PUBLIC_TEST_EMAIL || "");
   const [password] = useState(process.env.NEXT_PUBLIC_TEST_PASSWORD || "");
-
   const { connection, loading: loadingConn, error: errorConn, fetchConnection } = useDrive(token);
-
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [folderStack, setFolderStack] = useState<string[]>([]);
-
   const { resources, loading: loadingRes, error: errorRes } = useDriveResources(
     connection?.connection_id || null,
     token,
@@ -25,14 +22,13 @@ export function useFilePickerLogic() {
   const [indexedIds, setIndexedIds] = useState<string[]>([]);
   const [knowledgeBaseId, setKnowledgeBaseId] = useState<string | null>(null);
   const [pendingIds, setPendingIds] = useState<string[]>([]);
-
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
     async function autoInitialize() {
       if (!email || !password) {
-        setInitError("Credenciais não configuradas");
+        setInitError("Credentials not configured");
         setIsInitializing(false);
         return;
       }
@@ -45,7 +41,7 @@ export function useFilePickerLogic() {
           await handleLogin(email, password);
         }
       } catch (err) {
-        setInitError(err instanceof Error ? err.message : 'Erro no login automático');
+        setInitError(err instanceof Error ? err.message : 'Automatic login error');
         setIsInitializing(false);
       }
     }
@@ -59,7 +55,7 @@ export function useFilePickerLogic() {
         try {
           await fetchConnection();
         } catch (err) {
-          setInitError(err instanceof Error ? err.message : 'Erro na conexão automática');
+          setInitError(err instanceof Error ? err.message : 'Automatic connection error');
         }
       }
     }
@@ -122,9 +118,9 @@ export function useFilePickerLogic() {
       setPendingIds((prev) => [...prev, ...selectedIds]);
       setSelectedIds([]);
       if (kb?.id) setKnowledgeBaseId(kb.id);
-      return { success: true, message: "Indexação iniciada!" };
+      return { success: true, message: "Indexing started!" };
     } catch (err: unknown) {
-      return { success: false, message: "Erro ao indexar: " + (err instanceof Error ? err.message : 'Erro desconhecido') };
+      return { success: false, message: "Error indexing: " + (err instanceof Error ? err.message : 'Unknown error') };
     }
   }
 
@@ -133,9 +129,9 @@ export function useFilePickerLogic() {
     initError,
     resources,
     folderStack, handleEnterFolder, handleGoBack,
-    selectedIds, pendingIds, indexedIds, knowledgeBaseId,
+    selectedIds, pendingIds, indexedIds, knowledgeBaseId, setSelectedIds,
     loadingKB, errorKB, handleRemoveFromIndex,
     toggleSelect, handleIndexSelected,
-    connection, token // Adicionado para o prefetch
+    connection, token 
   };
 }

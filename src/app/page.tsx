@@ -7,18 +7,19 @@ import "./globals.css";
 export default function Home() {
   return (
     <>
-    <div className=" flex w-full min-h-screen flex-col bg-gray-200 lg:hidden">
-      <div className="flex hidden md:flex-col md:flex-col">
+    <div className=" flex w-full h-screen flex-col bg-gray-200 lg:hidden">
+      <div className="flex hidden md:flex-col md:flex-col flex w-full h-screen">
         <LeftBar />
       </div>
-      <div className="flex w-full flex-col  ">
+      <div className="flex w-full flex-col h-screen">
         <Header />
-        <div className="flex w-full flex-grow overflow-y-auto max-h-screen">
+        <div className="flex w-full flex-grow  overflow-y-auto ">
           <Content />
         </div>
         <Footer />
       </div>
     </div>
+
     <div className="flex w-full h-screen flex-col bg-white hidden lg:flex">
       <div className="flex w-full h-screen">
         <LeftBar />

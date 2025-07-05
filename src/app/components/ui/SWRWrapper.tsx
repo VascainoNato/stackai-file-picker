@@ -17,7 +17,6 @@ export function SWRProvider({ children }: { children: React.ReactNode }) {
     setIsClient(true);
   }, []);
 
-  // Se ainda não é client, usa SWR sem provider customizado
   if (!isClient) {
     return (
       <SWRConfig>
@@ -26,7 +25,6 @@ export function SWRProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Se é client, usa o provider com localStorage
   return (
     <SWRConfig value={{ provider: localStorageProvider }}>
       {children}

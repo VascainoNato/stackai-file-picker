@@ -1,7 +1,10 @@
 export default function LeftBar() {
     return (
-      <div className="flex w-[10%] h-20 bg-gray-200 h-full">
-          Side Menu
+      <div className="flex lg:w-[15%] h-20 bg-gray-100 h-full lg:flex-col">
+        <div className="flex ">
+
+        </div>
+         <h1>Integrations</h1>
       </div>
     );
   }

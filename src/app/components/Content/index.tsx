@@ -3,6 +3,9 @@ import { useFilePickerLogic } from "../../hooks/useFilePicker";
 import { mutate } from "swr";
 import { fetcher } from "../../hooks/useDriveResources";
 import { useState } from "react";
+import { ChevronDown, ChevronRight, ChevronUp, Columns, File, FileIcon, Filter, Folder, Grid, Layout, List, ListFilter, Search, SortAsc, SortDesc } from "lucide-react";
+import FolderPreview from "./FolderPreview";
+import React from "react";
 
 export default function Content() {
   const {
@@ -10,7 +13,7 @@ export default function Content() {
     initError,
     resources,
     folderStack, handleEnterFolder, handleGoBack,
-    selectedIds, pendingIds, indexedIds, knowledgeBaseId,
+    selectedIds, pendingIds, indexedIds, knowledgeBaseId, setSelectedIds,
     loadingKB, errorKB, handleRemoveFromIndex,
     toggleSelect, handleIndexSelected,
     connection, token
@@ -20,6 +23,7 @@ export default function Content() {
   const [sort, setSort] = useState<"az" | "za" | "type">("type");
   const [statusFilter, setStatusFilter] = useState<"all" | "indexed" | "pending" | "processing" | "not_indexed">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "directory" | "file">("all");
+  const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
 
   const prefetchFolder = (folderId: string) => {
     if (connection?.connection_id && token) {
@@ -31,18 +35,12 @@ export default function Content() {
     }
   };
 
-  // Filtrar e ordenar recursos
   const filteredResources = resources
     .filter(item => {
-      // Filtro por busca
       const matchesSearch = item.inode_path.path.toLowerCase().includes(search.toLowerCase());
-      
-      // Filtro por tipo
       const matchesType = typeFilter === "all" || 
         (typeFilter === "directory" && item.inode_type === "directory") ||
         (typeFilter === "file" && item.inode_type !== "directory");
-      
-      // Filtro por status
       const isIndexed = indexedIds.includes(item.resource_id);
       const isPending = pendingIds.includes(item.resource_id);
       const isSelected = selectedIds.includes(item.resource_id);
@@ -59,7 +57,6 @@ export default function Content() {
       }
       
       const matchesStatus = statusFilter === "all" || status === statusFilter;
-      
       return matchesSearch && matchesType && matchesStatus;
     })
     .sort((a, b) => {
@@ -70,7 +67,6 @@ export default function Content() {
         return b.inode_path.path.localeCompare(a.inode_path.path);
       }
       if (sort === "type") {
-        // Pastas primeiro, depois arquivos, ambos ordenados A-Z
         if (a.inode_type !== b.inode_type) {
           return a.inode_type === "directory" ? -1 : 1;
         }
@@ -79,7 +75,6 @@ export default function Content() {
       return 0;
     });
 
-  // Skeleton simples
   const Skeleton = () => (
     <div className="bg-white border rounded-lg p-4">
       <div className="space-y-2">
@@ -93,160 +88,235 @@ export default function Content() {
     </div>
   );
 
-  // Mostra skeleton enquanto inicializa OU carrega recursos
+  function handleSelectAll(checked: boolean) {
+    if (checked) {
+      const allIds = filteredResources
+        .filter(item => !indexedIds.includes(item.resource_id))
+        .map(item => item.resource_id);
+      setSelectedIds(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  }
+
+  function toggleFolderPreview(folderId: string) {
+    setExpandedFolders(prev =>
+      prev.includes(folderId)
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    );
+  }
   const isLoadingResources = isInitializing || (resources.length === 0 && !initError);
-
   return (
-    <section className="w-full flex flex-col gap-4 p-8">
-      <h2 className="text-xl font-bold">Google Drive File Picker</h2>
-
-      {/* Mostra erro se houver */}
-      {initError && (
-        <div className="text-red-600">
-          Erro ao carregar: {initError}
+    <section className="w-full flex flex-col gap-2 p-4 lg:px-8 xl:px-16 lg:gap-0">
+      <h2 className="text-sm font-roboto text-gray-500 flex lg:hidden">Folders</h2>
+      <div className="hidden lg:flex lg:w-full lg:h-10 gap-2 border-b border-gray-200 justify-between">
+        <div className="flex w-full gap-2 items-center align-center">
+        <input
+          type="checkbox"
+          checked={
+            filteredResources.length > 0 &&
+            filteredResources
+              .filter(item => !indexedIds.includes(item.resource_id))
+              .every(item => selectedIds.includes(item.resource_id))
+          }
+          onChange={e => handleSelectAll(e.target.checked)}
+          disabled={filteredResources.length === 0}
+        />
+          <h5 className="text-sm font-roboto text-[color:#202124] font-roboto items-center align-center flex">Select all</h5>
         </div>
-      )}
+        <div className="flex w-full justify-end text-sm font-roboto text-gray-500 font-roboto font-sm items-center align-center">
+        <div className="text-sm text-gray-700 mb-4">
+          {selectedIds.length === 0
+            ? "0"
+            : `${selectedIds.length}`}
+        </div>
+        </div>
+      </div>
 
-      {/* Mostra skeleton enquanto carrega */}
       {isLoadingResources && <Skeleton />}
 
-      {/* Lista de arquivos/pastas */}
       {resources.length > 0 && (
-        <div className="bg-white border rounded-lg p-4">
-          {selectedIds.length > 0 && (
-            <div className="text-sm text-gray-700 mb-4">
-              {selectedIds.length} arquivo(s)/pasta(s) selecionado(s) para indexação
+        <div className=" ">
+          <div className="hidden lg:flex w-full items-center py-2 border-b">
+            <div className="flex items-center gap-16 w-[70%]">
+            <div className="relative flex items-center gap-2">
+              <ListFilter size={24} className="text-gray-300 pointer-events-none" />
+              <h5 className="text-sm font-roboto text-[color:#202124] font-roboto items-center align-center flex">Sort</h5>
+              <select
+                value={sort}
+                onChange={e => setSort(e.target.value as "az" | "za" | "type")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer border-none outline-none text-sm text-gray-300 font-roboto p-2"
+                aria-label="Sort"
+              >
+                <option value="az">A-Z</option>
+                <option value="za">Z-A</option>
+                <option value="type">Folders first</option>
+              </select>
             </div>
-          )}
 
-          {/* FILTROS E BUSCA - AQUI É O LUGAR CERTO */}
-          <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-gray-50 rounded">
-            <input
-              type="text"
-              placeholder="Buscar arquivos ou pastas..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="border rounded px-3 py-2 flex-1 min-w-[200px]"
-            />
-            <select
-              value={sort}
-              onChange={e => setSort(e.target.value as "az" | "za" | "type")}
-              className="border rounded px-3 py-2"
-            >
-              <option value="az">A-Z</option>
-              <option value="za">Z-A</option>
-              <option value="type">Tipo (Pastas primeiro)</option>
-            </select>
-            <select
-              value={typeFilter}
-              onChange={e => setTypeFilter(e.target.value as "all" | "directory" | "file")}
-              className="border rounded px-3 py-2"
-            >
-              <option value="all">Todos os tipos</option>
-              <option value="directory">Só pastas</option>
-              <option value="file">Só arquivos</option>
-            </select>
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value as "all" | "indexed" | "pending" | "processing" | "not_indexed")}
-              className="border rounded px-3 py-2"
-            >
-              <option value="all">Todos os status</option>
-              <option value="indexed">Indexados</option>
-              <option value="pending">Pendentes</option>
-              <option value="processing">Processando</option>
-              <option value="not_indexed">Não indexados</option>
-            </select>
+            <div className="relative flex items-center gap-2">
+              <Filter size={24} className="text-gray-300 pointer-events-none" />
+              <h5 className="text-sm font-roboto text-[color:#202124] font-roboto items-center align-center flex">Filter</h5>
+              <select
+                value={typeFilter}
+                onChange={e => setTypeFilter(e.target.value as "all" | "directory" | "file")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer border-none outline-none text-sm text-gray-300 font-roboto p-2"
+                aria-label="Filtrar por tipo"
+              >
+                <option value="all">All files</option>
+                <option value="directory">Only folders</option>
+                <option value="file">Only files</option>
+              </select>
+            </div>
+
+            <div className="relative flex items-center gap-2">
+              <SortDesc size={24} className="text-gray-300 pointer-events-none" />
+              <h5 className="text-sm font-roboto text-[color:#202124] font-roboto items-center align-center flex">Status</h5>
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(
+                  e.target.value as "all" | "indexed" | "pending" | "processing" | "not_indexed"
+                )}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer border-none outline-none text-sm text-gray-300 font-roboto p-2"
+                aria-label="Filtrar by Status"
+              >
+                <option value="all">All</option>
+                <option value="indexed">Indexed</option>
+                <option value="pending">Pendings</option>
+                <option value="processing">Processing</option>
+                <option value="not_indexed">Not indexed</option>
+              </select>
           </div>
-          
-          <ul className="space-y-2">
-            {filteredResources.map((item) => {
-              const isIndexed = indexedIds.includes(item.resource_id);
-              const isPending = pendingIds.includes(item.resource_id);
-              const isSelected = selectedIds.includes(item.resource_id);
-              
-              let status: "indexed" | "processing" | "pending" | "not_indexed";
-              if (isIndexed) {
-                status = "indexed";
-              } else if (isPending && !isSelected) {
-                status = "processing";
-              } else if (isSelected) {
-                status = "pending";
-              } else {
-                status = "not_indexed";
-              }
-              
-              return (
-                <li key={item.resource_id} className="flex items-center gap-3 py-2 px-2 hover:bg-gray-50 rounded">
+            </div>
+              <div className="flex items-center w-[30%]">
+                <div className="relative w-full">
+                  <Search
+                    className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500"
+                    size={16}
+                  />
                   <input
+                    type="text"
+                    placeholder="Search..."
+                    className="bg-gray-200 w-full h-8 pl-8 pr-2 rounded-sm text-sm font-roboto text-[color:#202124] outline-none border-none"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+          </div>
+        
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 align-center lg:flex lg:flex-col lg:overflow-y-auto lg:max-h-screen lg:gap-0 cursor-pointer">
+          {filteredResources.map((item) => {
+            const isIndexed = indexedIds.includes(item.resource_id);
+            const isPending = pendingIds.includes(item.resource_id);
+            const isSelected = selectedIds.includes(item.resource_id);
+            const isExpanded = expandedFolders.includes(item.resource_id);
+
+            let status: "indexed" | "processing" | "pending" | "not_indexed";
+            if (isIndexed) {
+              status = "indexed";
+            } else if (isPending && !isSelected) {
+              status = "processing";
+            } else if (isSelected) {
+              status = "pending";
+            } else {
+              status = "not_indexed";
+            }
+
+            return (
+             <React.Fragment key={item.resource_id}>
+              <li
+                key={item.resource_id}
+                className="flex flex-row items-center p-3 min-w-0 align-center bg-white items-center gap-2 overflow-hidden lg:flex lg:p-0 lg:min-h-[40px] lg:border-b lg:border-gray-100 lg:px-2 lg:hover:bg-gray-100"
+                onMouseEnter={
+                  item.inode_type === "directory"
+                    ? () => prefetchFolder(item.resource_id)
+                    : undefined
+                }
+             >
+                <div className="flex items-center align-center lg:gap-2">
+                  {item.inode_type === "directory" && (
+                    <button
+                      type="button"
+                      onClick={() => toggleFolderPreview(item.resource_id)}
+                      className="mr-1 flex items-center justify-center hidden lg:flex"
+                      aria-label={isExpanded ? "Recolher preview" : "Expandir preview"}
+                      tabIndex={0}
+                    >
+                      {isExpanded
+                        ? <ChevronUp size={16} className="text-gray-400 cursor-pointer" />
+                        : <ChevronDown size={16} className="text-gray-400 cursor-pointer" />}
+                    </button>
+                  )}
+                 <input
                     type="checkbox"
                     checked={selectedIds.includes(item.resource_id)}
-                    onChange={() => toggleSelect(item.resource_id)}
+                    onChange={e => {
+                      e.stopPropagation();
+                      toggleSelect(item.resource_id);
+                    }}
                     disabled={isIndexed}
-                    className="w-4 h-4"
+                    className="w-4 h-4 flex items-center align-center"
                   />
+                </div>
 
-                  {item.inode_type === "directory" ? (
-                    <button
-                      className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
-                      onClick={() => handleEnterFolder(item.resource_id)}
-                      onMouseEnter={() => prefetchFolder(item.resource_id)}
-                    >
-                      📁 <p>{item.inode_path.path}</p>
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      📄 <p>{item.inode_path.path}</p>
-                    </div>
-                  )}
+                {item.inode_type === "directory" ? (
+                  <button
+                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                    onClick={() => handleEnterFolder(item.resource_id)}
+                    onMouseEnter={() => prefetchFolder(item.resource_id)}
+                  >
+                    <Folder size={20} color="gray" /> <p className="break-words font-roboto text-sm text-gray-500 cursor-pointer">{item.inode_path.path}</p>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                     <File size={20} color="gray" /> <p className="break-words font-roboto text-sm text-gray-500 truncate">{item.inode_path.path}</p>
+                  </div>
+                )}
+                {status === "indexed" ? (
+                  <p className="ml-auto px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                    Indexed
+                  </p>
+                ) : status === "processing" ? (
+                  <p className="ml-auto px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                    Processing
+                  </p>
+                ) : status === "pending" ? (
+                  <p className="ml-auto px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                    Pending
+                  </p>
+                ) : null}
+              </li>
+              {item.inode_type === "directory" && isExpanded && (
+                  <li
+                    key={item.resource_id + "-preview"}
+                    className="hidden lg:block p-0 m-0 border-0 bg-transparent"
+                  >
+                    <FolderPreview
+                      folderId={item.resource_id}
+                      connectionId={connection?.connection_id}
+                      token={token}
+                    />
+                  </li>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </ul>
 
-                  {status === "indexed" ? (
-                    <p className="ml-auto px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                      Indexado
-                    </p>
-                  ) : status === "processing" ? (
-                    <p className="ml-auto px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                      Processando
-                    </p>
-                  ) : status === "pending" ? (
-                    <p className="ml-auto px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
-                      Pendente
-                    </p>
-                  ) : null}
-
-                  {isIndexed && knowledgeBaseId && (
-                    <button
-                      className="ml-2 text-red-600 hover:text-red-800 text-xs px-2 py-1 rounded hover:bg-red-50"
-                      onClick={async () => {
-                        try {
-                          await handleRemoveFromIndex(knowledgeBaseId, item.inode_path.path);
-                          alert("Item removido da indexação!");
-                        } catch (err: unknown) {
-                          alert("Erro ao remover: " + (err instanceof Error ? err.message : 'Erro desconhecido'));
-                        }
-                      }}
-                    >
-                      Remover
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* Mostra se não há resultados após filtrar */}
+        
           {filteredResources.length === 0 && (
             <div className="text-gray-500 text-center py-4">
-              Nenhum resultado encontrado para os filtros aplicados.
+              No results found for applied filters.
             </div>
           )}
-          
           {folderStack.length > 0 && (
             <button
-              className="mt-4 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded"
+              className="mt-4 bg-white hover:bg-gray-300 px-4 py-2 rounded"
               onClick={handleGoBack}
             >
-              ← Voltar
+              ← Return
             </button>
           )}
           
@@ -261,17 +331,16 @@ export default function Content() {
                 }
               }}
             >
-              {loadingKB ? "Indexando..." : "Indexar selecionados"}
+              {loadingKB ? "Indexing..." : "Index selected"}
             </button>
           )}
           
-          {errorKB && <div className="text-red-600 mt-2">Erro indexação: {errorKB}</div>}
+          {errorKB && <div className="text-red-600 mt-2">Indexing error: {errorKB}</div>}
         </div>
       )}
 
-      {/* Só mostra "nenhum arquivo" se não está carregando e não tem erro */}
       {!isLoadingResources && resources.length === 0 && !initError && (
-        <div className="text-gray-500">Nenhum arquivo encontrado.</div>
+        <div className="text-gray-500">No files found.</div>
       )}
     </section>
   );
