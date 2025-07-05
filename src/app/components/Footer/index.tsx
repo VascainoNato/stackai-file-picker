@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import { useFilePicker } from "../../contexts/FilePickerContext";
+import { useFilePicker } from "../../contexts/PickerContext";
 
 export default function Footer() {
   const {
