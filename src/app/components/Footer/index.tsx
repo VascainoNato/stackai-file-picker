@@ -1,9 +1,8 @@
 "use client";
 import { useState } from "react";
-
 import { AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import { useFilePicker } from "@/app/contexts/FilePickerContext";
+import { useFilePicker } from "../../contexts/FilePickerContext";
 
 export default function Footer() {
   const {

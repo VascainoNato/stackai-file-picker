@@ -6,7 +6,7 @@ import { ChevronDown, ChevronUp,  File, Filter, Folder, ListFilter, Search, Sort
 import FolderPreview from "./FolderPreview";
 import React from "react";
 import { LoadingDots } from '../ui/Skeleton';
-import { useFilePicker } from "@/app/contexts/FilePickerContext";
+import { useFilePicker } from "../../contexts/FilePickerContext";
 
 export default function Content() {
   const {

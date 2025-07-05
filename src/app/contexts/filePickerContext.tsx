@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext } from 'react';
-import { useFilePickerLogic } from '@/app/hooks/useFilePicker';
+import { useFilePickerLogic } from '../hooks/useFilePicker';
 
 type FilePickerLogicType = ReturnType<typeof useFilePickerLogic>;
 const FilePickerContext = createContext<FilePickerLogicType | null>(null);
