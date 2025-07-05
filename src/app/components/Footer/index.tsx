@@ -61,7 +61,6 @@ export default function Footer() {
         {selectedIds.length > 0 && (
           <button
             onClick={() => {
-              console.log("handleCancel disparado");
               handleCancel();
             }}
             disabled={loadingKB}
@@ -70,14 +69,12 @@ export default function Footer() {
           </button>
         )}
 
-
         {selectedIds.length > 0 && (
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 cursor-pointer font-roboto"
             disabled={loadingKB}
             onClick={async () => {
               const result = await handleIndexSelected();
-              console.log("Resultado da indexação:", result);
               if (result) {
                 alert(result.message);
               }
