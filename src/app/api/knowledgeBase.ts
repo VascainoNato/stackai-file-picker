@@ -51,10 +51,19 @@ export async function listIndexedResources(knowledgeBaseId: string, resourcePath
 }
 
 export async function removeFromIndex(knowledgeBaseId: string, resourcePath: string, token: string) {
-  const res = await fetch(`${STACKAI_API_URL}/knowledge_bases/${knowledgeBaseId}/resources?resource_path=${resourcePath}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error("Failed to remove from index");
-  return res.status;
+  try {
+    const res = await fetch(`${STACKAI_API_URL}/knowledge_bases/${knowledgeBaseId}/resources?resource_path=${encodeURIComponent(resourcePath)}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("removeFromIndex fetch error:", errorText);
+      throw new Error("Failed to remove from index: " + errorText);
+    }
+    return res.status;  
+  } catch (error) {
+    console.error("removeFromIndex fetch exception:", error);
+    throw error;
+  }
 }
