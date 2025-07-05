@@ -1,42 +1,53 @@
 "use client";
-import { useFilePicker } from "@/app/contexts/FilePickerContext";
+import { useState } from "react";
+
 import { AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
+import { useFilePicker } from "@/app/contexts/FilePickerContext";
 
 export default function Footer() {
   const {
     folderStack,
     handleGoBack,
     selectedIds,
-    setSelectedIds,
     loadingKB,
     handleIndexSelected,
-    knowledgeBaseId,
-    handleRemoveFromIndex,  
-    setIndexedIds,
-    resources,
-    setPendingIds,  
+    handleCancelIndexed,
+    indexedIds,
   } = useFilePicker();
 
-  const { token } = useFilePicker();
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isIndexing, setIsIndexing] = useState(false);
+
   async function handleCancel() {
-    if (!knowledgeBaseId) {
-      return;
-    }
-  
-    const resourcePaths = selectedIds.map(id => {
-      const resource = resources.find(r => r.resource_id === id);
-      return resource?.inode_path.path || "";
-    }).filter(Boolean);
-  
+    setIsCancelling(true);
     try {
-      await Promise.all(
-        resourcePaths.map(path => handleRemoveFromIndex(knowledgeBaseId, path))
-      );
-      setIndexedIds(prev => prev.filter(id => !selectedIds.includes(id)));
-      setPendingIds(prev => prev.filter(id => !selectedIds.includes(id)));
-      setSelectedIds([]);
-    } catch (err) {
-      console.error("Erro em handleCancel:", err);
+      const result = await handleCancelIndexed();
+      if (result) {
+        if (result.success) {
+          toast.success(result.message);
+        } else {
+          toast.error(result.message);
+        }
+      }
+    } finally {
+      setIsCancelling(false);
+    }
+  }
+
+  async function handleIndex() {
+    setIsIndexing(true);
+    try {
+      const result = await handleIndexSelected();
+      if (result) {
+        if (result.success) {
+          toast.success(result.message);
+        } else {
+          toast.error(result.message);
+        }
+      }
+    } finally {
+      setIsIndexing(false);
     }
   }
 
@@ -58,31 +69,25 @@ export default function Footer() {
           </button>
         )}
 
-        {selectedIds.length > 0 && (
+        {selectedIds.some(id => indexedIds.includes(id)) && (
           <button
-            onClick={() => {
-              handleCancel();
-            }}
-            disabled={loadingKB}
+            onClick={handleCancel}
+            disabled={loadingKB || isCancelling || isIndexing}
+            className="bg-white text-[color:#202124] border border-gray-300 px-4 py-2 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Cancel
+            {isCancelling ? "Cancelling..." : "Cancel Indexed"}
           </button>
         )}
 
-        {selectedIds.length > 0 && (
+        {selectedIds.some(id => !indexedIds.includes(id)) && (
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 cursor-pointer font-roboto"
-            disabled={loadingKB}
-            onClick={async () => {
-              const result = await handleIndexSelected();
-              if (result) {
-                alert(result.message);
-              }
-            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 cursor-pointer font-roboto disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loadingKB || isCancelling || isIndexing}
+            onClick={handleIndex}
           >
-            {loadingKB ? "Indexing..." : "Select"}
+            {isIndexing ? "Indexing..." : "Select"}
             <div className="flex items-center justify-center text-white r px-2 text-xs font-semibold">
-              {selectedIds.length}
+              {selectedIds.filter(id => !indexedIds.includes(id)).length}
             </div>
           </button>
         )}

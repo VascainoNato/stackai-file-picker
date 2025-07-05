@@ -1,22 +1,21 @@
 "use client";
 import { mutate } from "swr";
-import { useFilePicker } from "@/app/contexts/FilePickerContext";
 import { fetcher } from "../../hooks/useDriveResources";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, ChevronUp,  File, Filter, Folder, ListFilter, Search, SortDesc } from "lucide-react";
 import FolderPreview from "./FolderPreview";
 import React from "react";
 import { LoadingDots } from '../ui/Skeleton';
+import { useFilePicker } from "@/app/contexts/FilePickerContext";
 
 export default function Content() {
   const {
     isInitializing,
-    initError,
     resources,
-    folderStack, handleEnterFolder, handleGoBack,
+    handleEnterFolder, 
     selectedIds, pendingIds, indexedIds, setSelectedIds,
-    loadingKB, errorKB, loadingRes,
-    toggleSelect, handleIndexSelected,
+    loadingRes,
+    toggleSelect,
     connection, token
   } = useFilePicker();
   
@@ -26,9 +25,14 @@ export default function Content() {
   const [typeFilter, setTypeFilter] = useState<"all" | "directory" | "file">("all");
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const isLoadingResources = isInitializing || loadingRes;
+  const prefetchedFolders = useRef<Set<string>>(new Set());
 
   const prefetchFolder = (folderId: string) => {
     if (connection?.connection_id && token) {
+      if (prefetchedFolders.current.has(folderId)) {
+        return;
+      }
+      prefetchedFolders.current.add(folderId);
       mutate(
         [connection.connection_id, token, folderId],
         () => fetcher([connection.connection_id, token, folderId]),
@@ -36,6 +40,24 @@ export default function Content() {
       );
     }
   };
+
+  function getDescendantResourceIds(folderId: string, allResources: typeof resources): string[] {
+    const folder = allResources.find(r => r.resource_id === folderId);
+    if (!folder) return [];
+    const folderPath = folder.inode_path.path;
+    return allResources
+      .filter(r => r.inode_path.path.startsWith(folderPath + "/"))
+      .map(r => r.resource_id);
+  }
+
+  function getParentResourceId(resource: typeof resources[0], allResources: typeof resources): string | null {
+    const path = resource.inode_path.path;
+    const parts = path.split("/");
+    if (parts.length <= 1) return null;
+    const parentPath = parts.slice(0, -1).join("/");
+    const parent = allResources.find(r => r.inode_path.path === parentPath);
+    return parent ? parent.resource_id : null;
+  }
 
   const filteredResources = React.useMemo(() => {
     return resources
@@ -51,7 +73,7 @@ export default function Content() {
         let status: "indexed" | "processing" | "pending" | "not_indexed";
         if (isIndexed) {
           status = "indexed";
-        } else if (isPending && !isSelected) {
+        } else if (isPending) {
           status = "processing";
         } else if (isSelected) {
           status = "pending";
@@ -79,14 +101,41 @@ export default function Content() {
       });
   }, [resources, search, typeFilter, statusFilter, sort, indexedIds, pendingIds, selectedIds]);
 
-  
-
   function handleSelectAll(checked: boolean) {
     if (checked) {
       const allIds = filteredResources
         .filter(item => !indexedIds.includes(item.resource_id))
         .map(item => item.resource_id);
-      setSelectedIds(allIds);
+      
+      let newSelectedIds = [...allIds];
+      
+      for (const id of allIds) {
+        const resource = resources.find(r => r.resource_id === id);
+        if (resource?.inode_type === "directory") {
+          const descendants = getDescendantResourceIds(id, resources);
+          newSelectedIds = Array.from(new Set([...newSelectedIds, ...descendants]));
+        }
+      }
+      
+      function updateParentsSelection(id: string) {
+        const res = resources.find(r => r.resource_id === id);
+        if (!res) return;
+        const parentId = getParentResourceId(res, resources);
+        if (!parentId) return;
+        const parentDescendants = getDescendantResourceIds(parentId, resources);
+        const allDescendantsSelected = parentDescendants.every(descId => newSelectedIds.includes(descId));
+        if (allDescendantsSelected) {
+          if (!newSelectedIds.includes(parentId)) {
+            newSelectedIds.push(parentId);
+          }
+        } else {
+          newSelectedIds = newSelectedIds.filter(id => id !== parentId);
+        }
+        updateParentsSelection(parentId);
+      }
+      
+      allIds.forEach(id => updateParentsSelection(id));
+      setSelectedIds(newSelectedIds);
     } else {
       setSelectedIds([]);
     }
@@ -100,7 +149,6 @@ export default function Content() {
     );
   }
   
-
   return (
     <section className="w-full flex flex-col gap-2 p-4 lg:px-8 xl:px-16 lg:gap-0">
       <h2 className="text-sm font-roboto text-gray-500 flex lg:hidden">Folders</h2>
@@ -217,7 +265,7 @@ export default function Content() {
             const isPending = pendingIds.includes(item.resource_id);
             const isSelected = selectedIds.includes(item.resource_id);
             const isExpanded = expandedFolders.includes(item.resource_id);
-
+          
             let status: "indexed" | "processing" | "pending" | "not_indexed";
             if (isIndexed) {
               status = "indexed";
@@ -228,6 +276,10 @@ export default function Content() {
             } else {
               status = "not_indexed";
             }
+
+            const descendants = getDescendantResourceIds(item.resource_id, resources);
+            const selectedDescendantsCount = descendants.filter(id => selectedIds.includes(id)).length;
+            const isIndeterminate = selectedDescendantsCount > 0 && selectedDescendantsCount < descendants.length;
 
             return (
              <React.Fragment key={item.resource_id}>
@@ -254,16 +306,19 @@ export default function Content() {
                         : <ChevronDown size={16} className="text-gray-400 cursor-pointer" />}
                     </button>
                   )}
-                 <input
-                    type="checkbox"
-                    checked={selectedIds.includes(item.resource_id)}
-                    onChange={e => {
-                      e.stopPropagation();
-                      toggleSelect(item.resource_id);
-                    }}
-                    disabled={isIndexed}
-                    className="w-4 h-4 flex items-center align-center"
-                  />
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  ref={el => {
+                    if (el) el.indeterminate = isIndeterminate;
+                  }}
+                  onChange={async e => {
+                    e.stopPropagation();
+                    await toggleSelect(item.resource_id);
+                  }}
+                  disabled={false}
+                  className="w-4 h-4 flex items-center align-center"
+                />
                 </div>
 
                 {item.inode_type === "directory" ? (
@@ -290,6 +345,10 @@ export default function Content() {
                 ) : status === "pending" ? (
                   <p className="ml-auto px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
                     Pending
+                  </p>
+                ) :  status === "not_indexed" ? (
+                  <p className="ml-auto px-2 py-1 bg-red-100 text-yellow-800 rounded-full text-xs">
+                    Not indexed
                   </p>
                 ) : null}
               </li>

@@ -29,11 +29,6 @@ export function useDriveResourcesSWR(
       return fetcher(connectionId!, actualFolderId, tokenKey);
     },
     {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 30000, 
-      errorRetryCount: 3,
-      errorRetryInterval: 1000,
       keepPreviousData: true, 
     }
   );

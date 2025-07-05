@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   createKnowledgeBase,
   syncKnowledgeBase,
   listIndexedResources,
   removeFromIndex,
+  getKnowledgeBaseStatus,
 } from "../api/knowledgeBase";
 import { DriveResource } from "../types/drive";
 
@@ -32,9 +33,11 @@ export function useKnowledgeBase(token: string | null) {
     setLoading(true);
     setError(null);
     try {
-      await syncKnowledgeBase(knowledgeBaseId, orgId, token);
+      const result = await syncKnowledgeBase(knowledgeBaseId, orgId, token);
+      return result;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -66,16 +69,30 @@ export function useKnowledgeBase(token: string | null) {
     }
   }
 
-  async function getIndexedResourceIds(knowledgeBaseId: string): Promise<string[]> {
+  const getIndexedResourceIds = useCallback(async (knowledgeBaseId: string): Promise<string[]> => {
     if (!token) return [];
     try {
       const res = await listIndexedResources(knowledgeBaseId, "/", token);
-      return res.data.map((item: DriveResource) => item.resource_id);
-    } catch {
+      if (!res.data || !Array.isArray(res.data)) {
+        return [];
+      }
+      const resourceIds = res.data.map((item: DriveResource) => item.resource_id);
+      return resourceIds;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
       return [];
     }
-  }
+  }, [token]);
 
+  const getKBStatus = useCallback(async (knowledgeBaseId: string) => {
+    if (!token) return null;
+    try {
+      return await getKnowledgeBaseStatus(knowledgeBaseId, token);
+    } catch {
+      return null;
+    }
+  }, [token]);
+  
   return {
     loading,
     error,
@@ -85,5 +102,6 @@ export function useKnowledgeBase(token: string | null) {
     handleListIndexed,
     handleRemoveFromIndex,
     getIndexedResourceIds,
+    getKBStatus,
   };
 }

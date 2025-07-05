@@ -29,7 +29,17 @@ export function SWRProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SWRConfig value={{ provider: localStorageProvider }}>
+    <SWRConfig value={{ 
+      provider: localStorageProvider,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60000,
+      refreshInterval: 60000,
+      refreshWhenHidden: false,
+      refreshWhenOffline: false,
+      errorRetryCount: 3,
+      errorRetryInterval: 60000,
+    }}>
       {children}
     </SWRConfig>
   );

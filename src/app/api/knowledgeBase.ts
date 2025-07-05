@@ -35,11 +35,17 @@ export async function createKnowledgeBase(
 }
 
 export async function syncKnowledgeBase(knowledgeBaseId: string, orgId: string, token: string) {
-  const res = await fetch(`${STACKAI_API_URL}/knowledge_bases/sync/trigger/${knowledgeBaseId}/${orgId}`, {
+  const url = `${STACKAI_API_URL}/knowledge_bases/sync/trigger/${knowledgeBaseId}/${orgId}`;
+  const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (!res.ok) throw new Error("Failed to sync knowledge base");
-  return res.text(); 
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Failed to sync knowledge base: ${res.status} - ${errorText}`);
+  }
+  const result = await res.text();
+  return result; 
 }
 
 export async function listIndexedResources(knowledgeBaseId: string, resourcePath: string = "/", token: string) {
@@ -66,4 +72,12 @@ export async function removeFromIndex(knowledgeBaseId: string, resourcePath: str
     console.error("removeFromIndex fetch exception:", error);
     throw error;
   }
+}
+
+export async function getKnowledgeBaseStatus(knowledgeBaseId: string, token: string) {
+  const res = await fetch(`${STACKAI_API_URL}/knowledge_bases/${knowledgeBaseId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to get knowledge base status");
+  return res.json();
 }
