@@ -48,7 +48,7 @@ export default function LeftBar() {
             </div>
             <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md ">
               <Image
-                src="/notion.webp"
+                src="/Notion.webp"
                 alt="Notion Icon"
                 width={25}
                 height={25}
