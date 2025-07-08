@@ -2,7 +2,7 @@
 import { mutate } from "swr";
 import { fetcher } from "../../hooks/useDriveResources";
 import { useRef, useState } from "react";
-import { ChevronDown, ChevronUp,  File, Filter, Folder, ListFilter, Search, SortDesc } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp,  File, Filter, Folder, ListFilter, Search, SortDesc } from "lucide-react";
 import FolderPreview from "./FolderPreview";
 import React from "react";
 import { LoadingDots } from '../ui/Skeleton';
@@ -11,6 +11,8 @@ import { useFilePicker } from "../../contexts/PickerContext";
 export default function Content() {
   const {
     isInitializing,
+    folderStack,
+    handleGoBack,
     resources,
     handleEnterFolder, 
     selectedIds, pendingIds, indexedIds, setSelectedIds,
@@ -245,6 +247,14 @@ export default function Content() {
               </div>
           </div>
           <div className="hidden lg:flex w-full items-center py-2 border-b border-gray-200 px-2">
+          {folderStack.length > 0 && (
+          <button
+            className="pr-4"
+            onClick={handleGoBack}
+          >
+          <ChevronLeft size={16} className="text-gray-400 cursor-pointer" />
+          </button>
+        )}
             <div className="flex-1 text-xs font-roboto text-gray-500">Name</div>
             <div className="flex items-center gap-8 pr-8">
               <span className="w-36 text-xs font-roboto text-gray-500 text-right">Created At</span>

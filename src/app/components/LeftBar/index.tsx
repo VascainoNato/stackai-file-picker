@@ -1,12 +1,24 @@
-import { FileText, X } from "lucide-react";
+"use client";
+import { useFilePicker } from "@/app/contexts/PickerContext";
+import { ChevronLeft, FileText, X } from "lucide-react";
 import Image from "next/image";
 
 export default function LeftBar() {
+  const {
+  folderStack,
+  handleGoBack,
+} = useFilePicker();
     return (
       <div className="flex lg:w-[30%] xl:w-[15%] h-20 bg-gray-100 h-full lg:flex-col">
         <div className="flex w-full py-4 border-b-2 border-gray-200">
           <div className="flex w-[30%] justify-center items-center">
-            <X size={24}  color="gray"/>
+          {folderStack.length > 0 && (
+          <button
+            onClick={handleGoBack}
+          >
+          <ChevronLeft size={30} className="text-gray-400 cursor-pointer"/>
+          </button>
+        )}
           </div>
           <div className="flex w-[70%]  items-center">
             <h1 className=" font-roboto text-lg text-[color:#202124] font-medium">Integrations</h1>
