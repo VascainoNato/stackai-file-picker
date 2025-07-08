@@ -48,3 +48,14 @@ body {
     transform: translateY(-0.5em);
   }
 }
+
+*:focus {
+  outline: none;
+}
+
+button:focus,
+input:focus,
+select:focus {
+  outline: none;
+  box-sizing: border-box;
+}

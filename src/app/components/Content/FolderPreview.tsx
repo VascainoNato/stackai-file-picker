@@ -61,14 +61,18 @@ export default function FolderPreview({
         return (
           <React.Fragment key={item.resource_id}>
             <li
-              className="flex flex-row items-center p-3 min-w-0 align-center bg-white items-center gap-2 overflow-hidden lg:flex lg:w-full lg:p-0 lg:min-h-[40px] lg:border-b lg:border-gray-100 lg:px-2 lg:hover:bg-gray-100"
+              className="flex flex-row items-center p-3 min-w-0 align-center bg-white items-center gap-2 overflow-hidden lg:flex lg:w-full lg:p-0 lg:min-h-[40px] lg:border-b lg:border-gray-100 lg:px-2 lg:hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+
+
+              tabIndex={0}
             >
               {item.inode_type === "directory" ? (
                 <button
                   type="button"
                   onClick={() => toggleExpand(item.resource_id)}
-                  className="mr-1 flex items-center justify-center"
-                  aria-label={isExpanded ? "Collapse preview" : "Expand preview"}
+                                      className="mr-1 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset rounded p-1"
+
+                  
                   tabIndex={0}
                 >
                   {isExpanded ? (
@@ -92,6 +96,7 @@ export default function FolderPreview({
                 }}
                 disabled={false}
                 className="w-4 h-4 flex items-center align-center"
+
               />
               {item.inode_type === "directory" ? <Folder size={20} color="gray" /> : <FileIcon size={20} color="gray" />}
               <span className="flex-1 break-words font-roboto text-sm text-gray-500">{item.inode_path.path}</span>

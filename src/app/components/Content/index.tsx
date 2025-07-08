@@ -8,6 +8,7 @@ import React from "react";
 import { LoadingDots } from '../ui/Skeleton';
 import { useFilePicker } from "../../contexts/PickerContext";
 
+
 export default function Content() {
   const {
     isInitializing,
@@ -103,6 +104,8 @@ export default function Content() {
       });
   }, [resources, search, typeFilter, statusFilter, sort, indexedIds, pendingIds, selectedIds]);
 
+
+
   function handleSelectAll(checked: boolean) {
     if (checked) {
       const allIds = filteredResources
@@ -166,6 +169,7 @@ export default function Content() {
           }
           onChange={e => handleSelectAll(e.target.checked)}
           disabled={filteredResources.length === 0}
+
         />
           <h5 className="text-sm font-roboto text-[color:#202124] font-roboto items-center align-center flex">Select all</h5>
         </div>
@@ -188,7 +192,7 @@ export default function Content() {
                 value={sort}
                 onChange={e => setSort(e.target.value as "az" | "za" | "type")}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer border-none outline-none text-sm text-gray-300 font-roboto p-2"
-                aria-label="Sort"
+
               >
                 <option value="az">A-Z</option>
                 <option value="za">Z-A</option>
@@ -203,7 +207,7 @@ export default function Content() {
                 value={typeFilter}
                 onChange={e => setTypeFilter(e.target.value as "all" | "directory" | "file")}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer border-none outline-none text-sm text-gray-300 font-roboto p-2"
-                aria-label="Filtrar por tipo"
+
               >
                 <option value="all">All files</option>
                 <option value="directory">Only folders</option>
@@ -220,7 +224,7 @@ export default function Content() {
                   e.target.value as "all" | "indexed" | "pending" | "processing" | "not_indexed"
                 )}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer border-none outline-none text-sm text-gray-300 font-roboto p-2"
-                aria-label="Filtrar by Status"
+
               >
                 <option value="all">All</option>
                 <option value="indexed">Indexed</option>
@@ -242,6 +246,7 @@ export default function Content() {
                     className="bg-gray-200 w-full h-8 pl-8 pr-2 rounded-sm text-sm font-roboto text-[color:#202124] outline-none border-none"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
+
                   />
                 </div>
               </div>
@@ -313,8 +318,8 @@ export default function Content() {
                     <button
                       type="button"
                       onClick={() => toggleFolderPreview(item.resource_id)}
-                      className="mr-1 flex items-center justify-center hidden lg:flex"
-                      aria-label={isExpanded ? "Recolher preview" : "Expandir preview"}
+                      className="mr-1 flex items-center justify-center hidden lg:flex focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset rounded p-1"
+                      aria-label={isExpanded ? "Collapse folder preview" : "Expand folder preview"}
                       tabIndex={0}
                     >
                       {isExpanded
@@ -334,14 +339,16 @@ export default function Content() {
                   }}
                   disabled={false}
                   className="w-4 h-4 flex items-center align-center"
+
                 />
                 </div>
 
                 {item.inode_type === "directory" ? (
                   <button
-                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset rounded px-1 py-1"
                     onClick={() => handleEnterFolder(item.resource_id)}
                     onMouseEnter={() => prefetchFolder(item.resource_id)}
+
                   >
                     <Folder size={20} color="gray" /> <p className="break-words font-roboto text-sm text-gray-500 cursor-pointer">{item.inode_path.path}</p>
                   </button>

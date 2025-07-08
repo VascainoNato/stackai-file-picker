@@ -61,8 +61,9 @@ export default function Footer() {
         )}
         {folderStack.length > 0 && (
           <button
-            className="bg-white px-4 py-2 rounded border-gray-300 border cursor-pointer text-[color:#202124]"
+            className="bg-white px-4 py-2 rounded border-gray-300 border cursor-pointer text-[color:#202124] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
             onClick={handleGoBack}
+
           >
             Return
           </button>
@@ -72,7 +73,8 @@ export default function Footer() {
           <button
             onClick={handleCancel}
             disabled={loadingKB || isCancelling || isIndexing}
-            className="bg-white text-[color:#202124] border border-gray-300 px-4 py-2 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-white text-[color:#202124] border border-gray-300 px-4 py-2 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset disabled:focus:ring-0"
+
           >
             {isCancelling ? "Cancelling..." : "Cancel Indexed"}
           </button>
@@ -80,9 +82,10 @@ export default function Footer() {
 
         {selectedIds.some(id => !indexedIds.includes(id)) && (
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 cursor-pointer font-roboto disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 cursor-pointer font-roboto disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-white focus:ring-inset disabled:focus:ring-0"
             disabled={loadingKB || isCancelling || isIndexing}
             onClick={handleIndex}
+
           >
             {isIndexing ? "Indexing..." : "Select"}
             <div className="flex items-center justify-center text-white r px-2 text-xs font-semibold">

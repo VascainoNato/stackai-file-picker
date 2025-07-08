@@ -15,6 +15,8 @@ export default function LeftBar() {
           {folderStack.length > 0 && (
           <button
             onClick={handleGoBack}
+            className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset rounded p-1"
+
           >
           <ChevronLeft size={30} className="text-gray-400 cursor-pointer"/>
           </button>
@@ -27,11 +29,11 @@ export default function LeftBar() {
         <div className="flex px-6 py-2 w-full flex-col">
           <p className="text-gray-400 font-roboto text-sm font-normal">Integrations</p>
           <div className="flex w-full flex-col pt-4 gap-4">
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md p-1 hover:bg-gray-200 cursor-pointer rounded-md">
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <FileText size={20} color="gray"/>
               <h5 className="text-gray-400 font-roboto text-sm font-medium pt-1">Files</h5>
-            </div>
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md p-1 hover:bg-gray-200 cursor-pointer rounded-md">
+            </button>
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <Image
                 src="/globe.webp"
                 alt="Websites Icon"
@@ -39,8 +41,8 @@ export default function LeftBar() {
                 height={15}
               />
               <h5 className="text-gray-400 font-roboto text-sm font-medium pt-1">Websites</h5>
-            </div>
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md">
+            </button>
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <Image
                 src="/text-size.webp"
                 alt="Text Icon"
@@ -48,8 +50,8 @@ export default function LeftBar() {
                 height={15}
               />
               <h5 className="text-gray-400 font-roboto text-sm font-medium pt-1">Text</h5>
-            </div>
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md ">
+            </button>
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <Image
                 src="/confluence.webp"
                 alt="Confluence Icon"
@@ -57,8 +59,8 @@ export default function LeftBar() {
                 height={15}
               />
               <h5 className="text-gray-400 font-roboto text-sm font-medium pt-1">Confluence</h5>
-            </div>
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md ">
+            </button>
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <Image
                 src="/Notion.webp"
                 alt="Notion Icon"
@@ -66,8 +68,8 @@ export default function LeftBar() {
                 height={25}
               />
               <h5 className="text-gray-400 font-roboto text-sm font-medium ">Notion</h5>
-            </div>
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md ">
+            </button>
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <Image
                 src="/drive.webp"
                 alt="Google Drive Icon"
@@ -75,8 +77,8 @@ export default function LeftBar() {
                 height={25}
               />
               <h5 className="text-gray-400 font-roboto text-sm font-medium ">Google Drive</h5>
-            </div>
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md ">
+            </button>
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <Image
                 src="/onedrive.webp"
                 alt="One Drive Icon"
@@ -84,8 +86,8 @@ export default function LeftBar() {
                 height={25}
               />
               <h5 className="text-gray-400 font-roboto text-sm font-medium ">One Drive</h5>
-            </div>
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md ">
+            </button>
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <Image
                 src="/sharepoint.webp"
                 alt="Share Point Icon"
@@ -93,8 +95,8 @@ export default function LeftBar() {
                 height={25}
               />
               <h5 className="text-gray-400 font-roboto text-sm font-medium ">Sharepoint</h5>
-            </div>
-            <div className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md ">
+            </button>
+            <button className="flex w-full gap-2 items-center p-1 hover:bg-gray-200 cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset">
               <Image
                 src="/slack.webp"
                 alt="Slack Icon"
@@ -102,7 +104,7 @@ export default function LeftBar() {
                 height={25}
               />
               <h5 className="text-gray-400 font-roboto text-sm font-medium ">Slack</h5>
-            </div>
+            </button>
            
           </div>
         </div>
