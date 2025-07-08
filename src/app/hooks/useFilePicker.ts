@@ -103,8 +103,8 @@ export function useFilePickerLogic() {
     return parent ? parent.resource_id : null;
   }
 
-  async function toggleSelect(resourceId: string) {
-    const resource = resources.find(r => r.resource_id === resourceId);
+  async function toggleSelect(resourceId: string, resourceArg?: typeof resources[0]) {
+    const resource = resourceArg || resources.find(r => r.resource_id === resourceId);
     if (!resource) return;
     const isSelected = selectedIds.includes(resourceId);
     let newSelectedIds = [...selectedIds];
@@ -134,7 +134,7 @@ export function useFilePickerLogic() {
     }
   
     function updateParentsSelection(id: string) {
-      const res = resources.find(r => r.resource_id === id);
+      const res = resourceArg && id === resourceId ? resourceArg : resources.find(r => r.resource_id === id);
       if (!res) return;
   
       const parentId = getParentResourceId(res, resources);

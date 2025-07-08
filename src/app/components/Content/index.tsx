@@ -361,6 +361,12 @@ export default function Content() {
                       folderId={item.resource_id}
                       connectionId={connection?.connection_id}
                       token={token}
+                      expandedFolders={expandedFolders}
+                      toggleExpand={toggleFolderPreview}
+                      selectedIds={selectedIds}
+                      toggleSelect={toggleSelect}
+                      indexedIds={indexedIds}
+                      pendingIds={pendingIds}
                     />
                   </li>
                 )}
