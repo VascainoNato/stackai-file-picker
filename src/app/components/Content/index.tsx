@@ -244,13 +244,19 @@ export default function Content() {
                 </div>
               </div>
           </div>
-
+          <div className="hidden lg:flex w-full items-center py-2 border-b border-gray-200 px-2">
+            <div className="flex-1 text-xs font-roboto text-gray-500">Name</div>
+            <div className="flex items-center gap-8 pr-8">
+              <span className="w-36 text-xs font-roboto text-gray-500 text-right">Created At</span>
+              <span className="w-36 text-xs font-roboto text-gray-500 text-right">Modified At</span>
+              <span className="w-24 text-xs font-roboto text-gray-500 text-right">Status</span>
+            </div>
+          </div>
           {filteredResources.length === 0 && !isLoadingResources && (
             <div className="text-center text-gray-500 py-4">
               No items found matching your search or filters.
             </div>
           )}
-
 
           {isLoadingResources ? (
          <ul className="grid grid-cols-2 gap-2 ...">
@@ -285,7 +291,7 @@ export default function Content() {
              <React.Fragment key={item.resource_id}>
               <li
                 key={item.resource_id}
-                className="flex flex-row items-center p-3 min-w-0 align-center bg-white items-center gap-2 overflow-hidden lg:flex lg:p-0 lg:min-h-[40px] lg:border-b lg:border-gray-100 lg:px-2 lg:hover:bg-gray-100"
+                className="flex flex-1 flex-row items-center p-3 min-w-0 align-center bg-white items-center gap-2 overflow-hidden lg:flex lg:w-full lg:p-0 lg:min-h-[40px] lg:border-b lg:border-gray-100 lg:px-2 lg:hover:bg-gray-100"
                 onMouseEnter={
                   item.inode_type === "directory"
                     ? () => prefetchFolder(item.resource_id)
@@ -334,23 +340,21 @@ export default function Content() {
                      <File size={20} color="gray" /> <p className="break-words font-roboto text-sm text-gray-500 truncate">{item.inode_path.path}</p>
                   </div>
                 )}
-                {status === "indexed" ? (
-                  <p className="ml-auto px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                    Indexed
-                  </p>
-                ) : status === "processing" ? (
-                  <p className="ml-auto px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                    Processing
-                  </p>
-                ) : status === "pending" ? (
-                  <p className="ml-auto px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
-                    Pending
-                  </p>
-                ) :  status === "not_indexed" ? (
-                  <p className="ml-auto px-2 py-1 bg-red-100 text-yellow-800 rounded-full text-xs">
-                    Not indexed
-                  </p>
-                ) : null}
+                <div className="flex items-center gap-8 justify-end flex-1">
+                  <span className="w-36 text-xs text-gray-400 text-right">{item.created_at ? new Date(item.created_at).toLocaleString() : ''}</span>
+                  <span className="w-36 text-xs text-gray-400 text-right">{item.modified_at ? new Date(item.modified_at).toLocaleString() : ''}</span>
+                  <span className="w-24 text-xs text-right">
+                    {status === "indexed" && (
+                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Indexed</span>
+                    )}
+                    {status === "processing" && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Processing</span>
+                    )}
+                    {status === "pending" && (
+                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Selected</span>
+                    )}
+                  </span>
+                </div>
               </li>
               {item.inode_type === "directory" && isExpanded && (
                   <li

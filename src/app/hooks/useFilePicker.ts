@@ -108,11 +108,13 @@ export function useFilePickerLogic() {
     if (!resource) return;
     const isSelected = selectedIds.includes(resourceId);
     let newSelectedIds = [...selectedIds];
-  
+
     if (resource.inode_type === "directory") {
       if (isSelected) {
         const descendants = getDescendantResourceIds(resourceId, resources);
         newSelectedIds = newSelectedIds.filter(id => id !== resourceId && !descendants.includes(id));
+        setSelectedIds(newSelectedIds);
+        return; 
       } else {
         if (connection?.connection_id && token) {
           const folderResources = await listFolderResources(connection.connection_id, resourceId, token);
@@ -132,27 +134,27 @@ export function useFilePickerLogic() {
         newSelectedIds.push(resourceId);
       }
     }
-  
+
     function updateParentsSelection(id: string) {
       const res = resourceArg && id === resourceId ? resourceArg : resources.find(r => r.resource_id === id);
       if (!res) return;
-  
       const parentId = getParentResourceId(res, resources);
       if (!parentId) return;
-  
       const parentDescendants = getDescendantResourceIds(parentId, resources);
-      const allDescendantsSelected = parentDescendants.every(descId => newSelectedIds.includes(descId));
-  
+      const allDescendantsSelected = parentDescendants.length > 0 && parentDescendants.every(descId => newSelectedIds.includes(descId));
+      const noneDescendantsSelected = parentDescendants.every(descId => !newSelectedIds.includes(descId));
       if (allDescendantsSelected) {
         if (!newSelectedIds.includes(parentId)) {
           newSelectedIds.push(parentId);
         }
+      } else if (noneDescendantsSelected) {
+        newSelectedIds = newSelectedIds.filter(id => id !== parentId);
       } else {
         newSelectedIds = newSelectedIds.filter(id => id !== parentId);
       }
       updateParentsSelection(parentId);
     }
-  
+
     updateParentsSelection(resourceId);
     setSelectedIds(newSelectedIds);
   }

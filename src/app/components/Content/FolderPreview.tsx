@@ -72,7 +72,7 @@ export default function FolderPreview({
         return (
           <React.Fragment key={item.resource_id}>
             <li
-              className="flex flex-row items-center p-3 min-w-0 align-center bg-white items-center gap-2 overflow-hidden lg:flex lg:p-0 lg:min-h-[40px] lg:border-b lg:border-gray-100 lg:px-2 lg:hover:bg-gray-100"
+              className="flex flex-row items-center p-3 min-w-0 align-center bg-white items-center gap-2 overflow-hidden lg:flex lg:w-full lg:p-0 lg:min-h-[40px] lg:border-b lg:border-gray-100 lg:px-2 lg:hover:bg-gray-100"
             >
               {item.inode_type === "directory" ? (
                 <button
@@ -106,17 +106,21 @@ export default function FolderPreview({
               />
               {item.inode_type === "directory" ? <Folder size={20} color="gray" /> : <FileIcon size={20} color="gray" />}
               <span className="flex-1 break-words font-roboto text-sm text-gray-500">{item.inode_path.path}</span>
-              <span className="w-24 text-xs">
-                {status === "indexed" && (
-                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Indexed</span>
-                )}
-                {status === "processing" && (
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Processing</span>
-                )}
-                {status === "pending" && (
-                  <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Selected</span>
-                )}
-              </span>
+              <div className="flex items-center gap-8 justify-end">
+                <span className="w-36 text-xs text-gray-400 text-right">{item.created_at ? new Date(item.created_at).toLocaleString() : ''}</span>
+                <span className="w-36 text-xs text-gray-400 text-right">{item.modified_at ? new Date(item.modified_at).toLocaleString() : ''}</span>
+                <span className="w-24 text-xs text-right">
+                  {status === "indexed" && (
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">Indexed</span>
+                  )}
+                  {status === "processing" && (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">Processing</span>
+                  )}
+                  {status === "pending" && (
+                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">Selected</span>
+                  )}
+                </span>
+              </div>
             </li>
             {item.inode_type === "directory" && isExpanded && (
               <li>

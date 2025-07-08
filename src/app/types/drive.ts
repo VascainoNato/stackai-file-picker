@@ -9,6 +9,8 @@ export type DriveResource = {
     inode_type: string;
     inode_path: { path: string };
     status?: "indexed" | "processing" | "not_indexed";
+    created_at?: string;
+    modified_at?: string;
 };
   
 export type DriveResourcesResponse = {
