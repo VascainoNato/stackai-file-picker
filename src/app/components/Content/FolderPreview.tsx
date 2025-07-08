@@ -2,18 +2,7 @@
 import { FileIcon, Folder, ChevronDown, ChevronUp } from "lucide-react";
 import { useDriveResources } from "../../hooks/useDriveResources";
 import React from "react";
-
-interface FolderPreviewProps {
-  folderId: string;
-  connectionId: string | null | undefined;
-  token: string | null | undefined;
-  expandedFolders: string[];
-  toggleExpand: (id: string) => void;
-  selectedIds: string[];
-  toggleSelect: (id: string, item: any) => void;
-  indexedIds: string[];
-  pendingIds: string[];
-}
+import { FolderPreviewProps } from "@/app/types/folderPreview";
 
 export default function FolderPreview({
   folderId,

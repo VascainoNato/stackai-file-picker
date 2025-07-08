@@ -1,6 +1,6 @@
 "use client";
 import { useFilePicker } from "@/app/contexts/PickerContext";
-import { ChevronLeft, FileText, X } from "lucide-react";
+import { ChevronLeft, FileText } from "lucide-react";
 import Image from "next/image";
 
 export default function LeftBar() {
