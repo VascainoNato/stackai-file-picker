@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Check yourself
+- https://stackai-file-picker.vercel.app/
+
+## Hear the Owner
+- https://youtu.be/zoz44XQiHKQ
+
+## StackAI File Picker
+This is a practical frontend challenge project for Stack AI, built with React and Next.js.
+
+## Overview
+The app mimics a file system manager (like Finder on MacOS) to manage files and folders from a Google Drive connection. It allows you to:
+- Read files and folders from the API by specifying the folder to list its contents (similar to ls in terminal).
+- Index folders and files.
+- De-index (remove) files from the indexed list (does NOT delete files from Google Drive).
+- View status of files/folders: indexed, not indexed, pending, and processing.
+- Prefetch folder contents on mouse hover for faster navigation.
+- Cache data with SWR to improve performance on revisits.
+- Filter and sort files/folders by name (A-Z, Z-A, folders first).
+- Filter by type (all files, only documents, only folders).
+- Filter by status.
+- Search files/folders by name.
+- Responsive mobile-first layout styled with TailwindCSS, inspired by Google Drive.
+- Uses Lucide icons and WebP images.
+- Loading skeletons and toast notifications for better UX.
+
+## Tech Stack
+- React 19
+- Next.js 15
+- TailwindCSS 4
+- SWR for data fetching, caching, and prefetching
+- Context API for global state management
+- Lucide React icons
+- React Hot Toast for notifications
+- Custom Skeleton for loading states
 
 ## Getting Started
+- To run this project locally, follow the steps below:
+  
+## Clone the repository:
+- git clone https://github.com/VascainoNato/stackai-file-picker.git
 
-First, run the development server:
+## Navigate into the project directory:
+- cd stackai-file-picker
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Install dependencies:
+- npm install
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run the development server:
+- npm run dev
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Open in your browser:
+- http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Disclaimer
+- This project is created solely for learning and demonstration purposes. It is not intended for commercial use or production deployment. Use it responsibly and at your own risk.
