@@ -224,7 +224,7 @@ export default function Content() {
               >
                 <option value="all">All</option>
                 <option value="indexed">Indexed</option>
-                <option value="pending">Pendings</option>
+                <option value="pending">Selected</option>
                 <option value="processing">Processing</option>
                 <option value="not_indexed">Not indexed</option>
               </select>
